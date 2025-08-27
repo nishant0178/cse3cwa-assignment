@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface Tab {
   id: number;
@@ -8,7 +9,6 @@ interface Tab {
 }
 
 const HomePage = () => {
-  const [activeMainTab, setActiveMainTab] = useState('Tabs');
   const [tabs, setTabs] = useState<Tab[]>([
     { id: 1, title: 'Step 1', content: '1. Install VSCode\n2. Install Chrome\n3. Install Node\n4. etc' }
   ]);
@@ -16,7 +16,7 @@ const HomePage = () => {
   const [htmlOutput, setHtmlOutput] = useState('');
   const [darkMode, setDarkMode] = useState(false);
 
-  // Load tabs from localStorage on component mount
+  // load saved tabs
   useEffect(() => {
     const savedTabs = localStorage.getItem('tabs');
     if (savedTabs) {
@@ -29,14 +29,14 @@ const HomePage = () => {
     }
   }, []);
 
-  // Save tabs to localStorage whenever tabs change
+  // save tabs
   useEffect(() => {
     localStorage.setItem('tabs', JSON.stringify(tabs));
   }, [tabs]);
 
-  // Listen for dark mode changes
+  // dark mode listener
   useEffect(() => {
-    const handleDarkModeChange = (event: any) => {
+    const handleDarkModeChange = (event: CustomEvent) => {
       setDarkMode(event.detail.darkMode);
     };
 
@@ -145,6 +145,20 @@ const HomePage = () => {
     setHtmlOutput(html);
   };
 
+  const downloadHTML = () => {
+    if (!htmlOutput) return;
+    
+    const blob = new Blob([htmlOutput], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'weekAssign.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       {/* Main Navigation Tabs */}
@@ -155,26 +169,26 @@ const HomePage = () => {
         <div style={{ padding: '8px 16px', border: `2px solid ${darkMode ? '#555' : '#000'}`, borderBottom: 'none', background: darkMode ? '#2d2d2d' : 'white', color: darkMode ? '#fff' : '#000', cursor: 'pointer', marginRight: '2px', fontSize: '14px' }}>
           Pre-lab Questions
         </div>
-        <a href="/escape-room" style={{ textDecoration: 'none' }}>
+        <Link href="/escape-room" style={{ textDecoration: 'none' }}>
           <div style={{ padding: '8px 16px', border: `2px solid ${darkMode ? '#555' : '#000'}`, borderBottom: 'none', background: darkMode ? '#2d2d2d' : 'white', color: darkMode ? '#fff' : '#000', cursor: 'pointer', marginRight: '2px', fontSize: '14px' }}>
             Escape Room
           </div>
-        </a>
-        <a href="/coding-races" style={{ textDecoration: 'none' }}>
+        </Link>
+        <Link href="/coding-races" style={{ textDecoration: 'none' }}>
           <div style={{ padding: '8px 16px', border: `2px solid ${darkMode ? '#555' : '#000'}`, borderBottom: 'none', background: darkMode ? '#2d2d2d' : 'white', color: darkMode ? '#fff' : '#000', cursor: 'pointer', marginRight: '2px', fontSize: '14px' }}>
             Coding Races
           </div>
-        </a>
-        <a href="/court-room" style={{ textDecoration: 'none' }}>
+        </Link>
+        <Link href="/court-room" style={{ textDecoration: 'none' }}>
           <div style={{ padding: '8px 16px', border: `2px solid ${darkMode ? '#555' : '#000'}`, borderBottom: 'none', background: darkMode ? '#2d2d2d' : 'white', color: darkMode ? '#fff' : '#000', cursor: 'pointer', marginRight: '2px', fontSize: '14px' }}>
             Court Room
           </div>
-        </a>
-        <a href="/about" style={{ textDecoration: 'none' }}>
+        </Link>
+        <Link href="/about" style={{ textDecoration: 'none' }}>
           <div style={{ padding: '8px 16px', border: `2px solid ${darkMode ? '#555' : '#000'}`, borderBottom: 'none', background: darkMode ? '#2d2d2d' : 'white', color: darkMode ? '#fff' : '#000', cursor: 'pointer', marginRight: '2px', fontSize: '14px' }}>
             About
           </div>
-        </a>
+        </Link>
       </div>
 
       {/* Main Content Area */}
@@ -324,21 +338,36 @@ const HomePage = () => {
             placeholder="Generated HTML will appear here..."
           />
           {htmlOutput && (
-            <button 
-              style={{
-                padding: '4px 8px',
-                background: '#28a745',
-                color: 'white',
-                border: 'none',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                marginTop: '10px'
-              }}
-              onClick={() => navigator.clipboard.writeText(htmlOutput)}
-            >
-              Copy Code
-            </button>
+            <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
+              <button 
+                style={{
+                  padding: '4px 8px',
+                  background: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                  fontSize: '12px'
+                }}
+                onClick={() => navigator.clipboard.writeText(htmlOutput)}
+              >
+                Copy Code
+              </button>
+              <button 
+                style={{
+                  padding: '4px 8px',
+                  background: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '3px',
+                  cursor: 'pointer',
+                  fontSize: '12px'
+                }}
+                onClick={downloadHTML}
+              >
+                Download HTML
+              </button>
+            </div>
           )}
           <div style={{fontSize: '12px', marginTop: '10px', color: darkMode ? '#aaa' : '#666'}}>
             Current tabs: {tabs.length} | Max: 15

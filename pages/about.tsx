@@ -6,7 +6,7 @@ const AboutPage = () => {
 
   // Listen for dark mode changes
   useEffect(() => {
-    const handleDarkModeChange = (event: any) => {
+    const handleDarkModeChange = (event: CustomEvent) => {
       setDarkMode(event.detail.darkMode);
     };
 
@@ -72,7 +72,7 @@ const AboutPage = () => {
             margin: '0 auto 30px',
             lineHeight: '1.6'
           }}>
-            CSE3CWA Assignment 1 - Interactive HTML5 Tabs Generator for MOODLE LMS
+            CSE3CWA Assignment 1 
           </p>
           <div style={{
             width: '150px',
@@ -153,7 +153,7 @@ const AboutPage = () => {
               margin: '0 0 15px 0',
               fontWeight: '300'
             }}>
-              Computer Science & Engineering Student
+              Computer Science Student
             </p>
             <div style={{
               display: 'flex',
@@ -283,7 +283,7 @@ const AboutPage = () => {
             maxWidth: '600px',
             margin: '0 auto 35px'
           }}>
-            Comprehensive walkthrough of the HTML5 Tabs Generator functionality and MOODLE LMS integration process.
+            Comprehensive walkthrough 
           </p>
           
           <div style={{
@@ -308,28 +308,6 @@ const AboutPage = () => {
                 borderRadius: '12px'
               }}
             />
-          </div>
-          
-          <div style={{
-            marginTop: '25px',
-            padding: '20px',
-            backgroundColor: darkMode ? 'rgba(255, 193, 7, 0.1)' : 'rgba(255, 193, 7, 0.05)',
-            borderRadius: '12px',
-            border: `1px solid ${darkMode ? 'rgba(255, 193, 7, 0.2)' : 'rgba(255, 193, 7, 0.15)'}`,
-            display: 'inline-block'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-              fontSize: '0.95rem',
-              color: darkMode ? '#ffd43b' : '#856404',
-              fontWeight: '500'
-            }}>
-              <span>🎯</span>
-              Tutorial Features: Interactive demonstrations, step-by-step guidance, and deployment best practices
-            </div>
           </div>
         </div>
       </div>

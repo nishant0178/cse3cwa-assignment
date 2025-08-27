@@ -5,7 +5,7 @@ const Footer = () => {
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    const handleDarkModeChange = (event: any) => {
+    const handleDarkModeChange = (event: CustomEvent) => {
       setDarkMode(event.detail.darkMode);
     };
 
