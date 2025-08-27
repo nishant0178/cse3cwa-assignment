@@ -1,479 +1,349 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+interface Tab {
+  id: number;
+  title: string;
+  content: string;
+}
 
 const HomePage = () => {
-  const [htmlCode, setHtmlCode] = useState("");
-  const [selectedComponent, setSelectedComponent] = useState("");
+  const [activeMainTab, setActiveMainTab] = useState('Tabs');
+  const [tabs, setTabs] = useState<Tab[]>([
+    { id: 1, title: 'Step 1', content: '1. Install VSCode\n2. Install Chrome\n3. Install Node\n4. etc' }
+  ]);
+  const [activeTab, setActiveTab] = useState(1);
+  const [htmlOutput, setHtmlOutput] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
 
-  const generateCompleteHTML = () => {
-    const html = `<!DOCTYPE html>
+  // Load tabs from localStorage on component mount
+  useEffect(() => {
+    const savedTabs = localStorage.getItem('tabs');
+    if (savedTabs) {
+      try {
+        const parsedTabs = JSON.parse(savedTabs);
+        setTabs(parsedTabs);
+      } catch (error) {
+        console.error('Error loading tabs from localStorage:', error);
+      }
+    }
+  }, []);
+
+  // Save tabs to localStorage whenever tabs change
+  useEffect(() => {
+    localStorage.setItem('tabs', JSON.stringify(tabs));
+  }, [tabs]);
+
+  // Listen for dark mode changes
+  useEffect(() => {
+    const handleDarkModeChange = (event: any) => {
+      setDarkMode(event.detail.darkMode);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('darkModeChange', handleDarkModeChange);
+      return () => window.removeEventListener('darkModeChange', handleDarkModeChange);
+    }
+  }, []);
+
+  const addTab = () => {
+    if (tabs.length < 15) {
+      const newId = Math.max(...tabs.map(t => t.id), 0) + 1;
+      const newTab = {
+        id: newId,
+        title: `Tab ${newId}`,
+        content: `Content for Tab ${newId}`
+      };
+      setTabs([...tabs, newTab]);
+    }
+  };
+
+  const removeTab = (tabId: number) => {
+    if (tabs.length > 1) {
+      const newTabs = tabs.filter(tab => tab.id !== tabId);
+      setTabs(newTabs);
+      if (activeTab === tabId && newTabs.length > 0) {
+        setActiveTab(newTabs[0].id);
+      }
+    }
+  };
+
+  const updateTabTitle = (tabId: number, newTitle: string) => {
+    setTabs(tabs.map(tab => 
+      tab.id === tabId ? { ...tab, title: newTitle } : tab
+    ));
+  };
+
+  const updateTabContent = (tabId: number, newContent: string) => {
+    setTabs(tabs.map(tab => 
+      tab.id === tabId ? { ...tab, content: newContent } : tab
+    ));
+  };
+
+  const generateHTML = () => {
+    let html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive HTML5 Components for MOODLE LMS</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <title>Generated Tabs</title>
     <style>
-        .rotating-element {
-            animation: rotate 2s linear infinite;
-        }
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .lightbox {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.8);
-        }
-        .lightbox img {
-            display: block;
-            margin: auto;
-            max-width: 90%;
-            max-height: 90%;
-            margin-top: 5%;
-        }
-        .canvas-container {
-            border: 1px solid #ccc;
-            margin: 10px 0;
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; }
     </style>
 </head>
 <body>
-    <div class="container mt-4">
-        <h1 class="text-center mb-4">HTML5 Interactive Components for MOODLE LMS</h1>
-        
-        <!-- Bootstrap Carousel -->
-        <div id="carouselExample" class="carousel slide mb-4" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <div class="carousel-item active">
-                    <div class="d-block w-100 bg-primary text-white text-center p-5">
-                        <h3>Slide 1</h3>
-                        <p>Interactive carousel component</p>
-                    </div>
-                </div>
-                <div class="carousel-item">
-                    <div class="d-block w-100 bg-secondary text-white text-center p-5">
-                        <h3>Slide 2</h3>
-                        <p>Perfect for educational content</p>
-                    </div>
-                </div>
-                <div class="carousel-item">
-                    <div class="d-block w-100 bg-success text-white text-center p-5">
-                        <h3>Slide 3</h3>
-                        <p>MOODLE LMS compatible</p>
-                    </div>
-                </div>
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
-            </button>
-        </div>
+    <div style="max-width: 800px; margin: 0 auto;">
+        <div style="display: flex; border-bottom: 2px solid #000; margin-bottom: 20px;">`;
 
-        <!-- Tabs -->
-        <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" data-bs-toggle="tab" href="#tab1">Tab 1</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab2">Tab 2</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab3">Tab 3</a>
-            </li>
-        </ul>
-        <div class="tab-content mb-4">
-            <div id="tab1" class="tab-pane fade show active p-3">
-                <h4>Tab Content 1</h4>
-                <p>This is the content for tab 1. Great for organizing course materials.</p>
-            </div>
-            <div id="tab2" class="tab-pane fade p-3">
-                <h4>Tab Content 2</h4>
-                <p>This is the content for tab 2. Perfect for different topics or modules.</p>
-            </div>
-            <div id="tab3" class="tab-pane fade p-3">
-                <h4>Tab Content 3</h4>
-                <p>This is the content for tab 3. Ideal for additional resources.</p>
-            </div>
-        </div>
+    tabs.forEach((tab, index) => {
+      html += `
+            <button style="padding: 10px 20px; border: 2px solid #000; border-bottom: none; background: ${index === 0 ? '#000' : '#f5f5f5'}; color: ${index === 0 ? 'white' : 'black'}; cursor: pointer; margin-right: 2px; font-size: 14px;" onclick="showTab(${tab.id}, this)">${tab.title}</button>`;
+    });
 
-        <!-- Accordion -->
-        <div class="accordion mb-4" id="accordionExample">
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-                        Accordion Item 1
-                    </button>
-                </h2>
-                <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
-                    <div class="accordion-body">
-                        This is the first item's accordion body. Perfect for FAQ sections or detailed explanations.
-                    </div>
-                </div>
-            </div>
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
-                        Accordion Item 2
-                    </button>
-                </h2>
-                <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                    <div class="accordion-body">
-                        This is the second item's accordion body. Great for organizing course content.
-                    </div>
-                </div>
-            </div>
+    html += `
         </div>
+        <div style="padding: 20px; border: 2px solid #000; border-top: none; min-height: 200px; background: #f9f9f9;">`;
 
-        <!-- Modal/Popup -->
-        <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#exampleModal">
-            Open Modal/Popup
-        </button>
-        <div class="modal fade" id="exampleModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Modal Title</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        This is a modal dialog. Perfect for important announcements or detailed information.
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    tabs.forEach((tab, index) => {
+      html += `
+            <div id="tab${tab.id}" style="display: ${index === 0 ? 'block' : 'none'};">
+                <div style="white-space: pre-line;">${tab.content}</div>
+            </div>`;
+    });
 
-        <!-- Dropdown -->
-        <div class="dropdown mb-4">
-            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                Dropdown Menu
-            </button>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Action 1</a></li>
-                <li><a class="dropdown-item" href="#">Action 2</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#">Separated link</a></li>
-            </ul>
-        </div>
-
-        <!-- Tooltips -->
-        <div class="mb-4">
-            <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="This is a tooltip">
-                Hover for Tooltip
-            </button>
-        </div>
-
-        <!-- Progress Bar -->
-        <div class="mb-4">
-            <label for="progressExample" class="form-label">Progress Bar Example</label>
-            <div class="progress">
-                <div class="progress-bar" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
-            </div>
-        </div>
-
-        <!-- Range Slider -->
-        <div class="mb-4">
-            <label for="customRange" class="form-label">Range Slider</label>
-            <input type="range" class="form-range" id="customRange" min="0" max="100" value="50">
-            <div class="d-flex justify-content-between">
-                <span>0</span>
-                <span>100</span>
-            </div>
-        </div>
-
-        <!-- Date Picker -->
-        <div class="mb-4">
-            <label for="datePicker" class="form-label">Date Picker</label>
-            <input type="date" class="form-control" id="datePicker">
-        </div>
-
-        <!-- Alerts -->
-        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-            <strong>Success!</strong> This is a success alert.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-
-        <!-- Lightbox -->
-        <div class="mb-4">
-            <h5>Lightbox Example</h5>
-            <img src="https://via.placeholder.com/200x150" class="img-thumbnail lightbox-trigger" alt="Sample Image" style="cursor: pointer;">
-        </div>
-
-        <!-- Canvas -->
-        <div class="mb-4">
-            <h5>Canvas Drawing</h5>
-            <canvas id="drawingCanvas" width="400" height="200" class="canvas-container"></canvas>
-            <div>
-                <button class="btn btn-sm btn-primary" onclick="clearCanvas()">Clear Canvas</button>
-                <button class="btn btn-sm btn-secondary" onclick="drawSample()">Draw Sample</button>
-            </div>
-        </div>
-
-        <!-- CSS Animation (Rotation) -->
-        <div class="mb-4">
-            <h5>CSS Animation (Rotation)</h5>
-            <div class="rotating-element bg-primary text-white p-3 d-inline-block rounded">
-                🔄 Rotating Element
-            </div>
-        </div>
-
-        <!-- Mermaid Diagram -->
-        <div class="mb-4">
-            <h5>Mermaid Diagram</h5>
-            <div class="mermaid">
-                graph TD
-                    A[Start] --> B{Decision}
-                    B -->|Yes| C[Process 1]
-                    B -->|No| D[Process 2]
-                    C --> E[End]
-                    D --> E
-            </div>
+    html += `
         </div>
     </div>
-
-    <!-- Lightbox Modal -->
-    <div id="lightbox" class="lightbox">
-        <span class="close" onclick="closeLightbox()" style="position: absolute; top: 15px; right: 35px; color: white; font-size: 40px; cursor: pointer;">&times;</span>
-        <img id="lightbox-img" src="" alt="">
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        // Initialize tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
+        function showTab(tabId, buttonElement) {
+            // Hide all tab contents`;
+    
+    tabs.forEach(tab => {
+      html += `
+            document.getElementById('tab${tab.id}').style.display = 'none';`;
+    });
 
-        // Initialize Mermaid
-        mermaid.initialize({startOnLoad:true});
-
-        // Lightbox functionality
-        document.querySelector('.lightbox-trigger').addEventListener('click', function() {
-            document.getElementById('lightbox').style.display = 'block';
-            document.getElementById('lightbox-img').src = this.src;
-        });
-
-        function closeLightbox() {
-            document.getElementById('lightbox').style.display = 'none';
+    html += `
+            
+            // Reset all button styles
+            var buttons = document.querySelectorAll('button');
+            buttons.forEach(function(btn) {
+                btn.style.background = '#f5f5f5';
+                btn.style.color = 'black';
+            });
+            
+            // Show selected tab and highlight button
+            document.getElementById('tab' + tabId).style.display = 'block';
+            buttonElement.style.background = '#000';
+            buttonElement.style.color = 'white';
         }
-
-        // Canvas functionality
-        const canvas = document.getElementById('drawingCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        let isDrawing = false;
-        let lastX = 0;
-        let lastY = 0;
-
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', () => isDrawing = false);
-        canvas.addEventListener('mouseout', () => isDrawing = false);
-
-        function startDrawing(e) {
-            isDrawing = true;
-            [lastX, lastY] = [e.offsetX, e.offsetY];
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            ctx.strokeStyle = '#007bff';
-            ctx.lineJoin = 'round';
-            ctx.lineCap = 'round';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(e.offsetX, e.offsetY);
-            ctx.stroke();
-            [lastX, lastY] = [e.offsetX, e.offsetY];
-        }
-
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function drawSample() {
-            ctx.strokeStyle = '#28a745';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.arc(200, 100, 50, 0, 2 * Math.PI);
-            ctx.stroke();
-        }
-
-        // Range slider value display
-        const rangeSlider = document.getElementById('customRange');
-        rangeSlider.addEventListener('input', function() {
-            console.log('Range value:', this.value);
-        });
     </script>
 </body>
 </html>`;
-
-    setHtmlCode(html);
-  };
-
-  const generateComponentHTML = (component) => {
-    const components = {
-      carousel: `<!-- Bootstrap Carousel -->
-<div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
-    <div class="carousel-inner">
-        <div class="carousel-item active">
-            <div class="d-block w-100 bg-primary text-white text-center p-5">
-                <h3>Slide 1</h3>
-            </div>
-        </div>
-        <div class="carousel-item">
-            <div class="d-block w-100 bg-secondary text-white text-center p-5">
-                <h3>Slide 2</h3>
-            </div>
-        </div>
-    </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-        <span class="carousel-control-next-icon"></span>
-    </button>
-</div>`,
-      tabs: `<!-- Bootstrap Tabs -->
-<ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item">
-        <a class="nav-link active" data-bs-toggle="tab" href="#tab1">Tab 1</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="tab" href="#tab2">Tab 2</a>
-    </li>
-</ul>
-<div class="tab-content">
-    <div id="tab1" class="tab-pane fade show active p-3">
-        <h4>Tab Content 1</h4>
-    </div>
-    <div id="tab2" class="tab-pane fade p-3">
-        <h4>Tab Content 2</h4>
-    </div>
-</div>`,
-      accordion: `<!-- Bootstrap Accordion -->
-<div class="accordion" id="accordionExample">
-    <div class="accordion-item">
-        <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-                Accordion Item 1
-            </button>
-        </h2>
-        <div id="collapseOne" class="accordion-collapse collapse show">
-            <div class="accordion-body">Content here</div>
-        </div>
-    </div>
-</div>`,
-      modal: `<!-- Bootstrap Modal -->
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-    Open Modal
-</button>
-<div class="modal fade" id="exampleModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Modal Title</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">Modal content here</div>
-        </div>
-    </div>
-</div>`
-    };
-
-    setHtmlCode(components[component] || '');
+    
+    setHtmlOutput(html);
   };
 
   return (
-    <div className="container mt-4">
-      <h1 className="text-center mb-4">HTML5 Component Generator for MOODLE LMS</h1>
-      
-      <div className="row mb-4">
-        <div className="col-md-6">
-          <button className="btn btn-success btn-lg w-100 mb-3" onClick={generateCompleteHTML}>
-            Generate Complete HTML5 Page
-          </button>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      {/* Main Navigation Tabs */}
+      <div style={{ display: 'flex', borderBottom: `2px solid ${darkMode ? '#555' : '#000'}`, marginBottom: '20px' }}>
+        <div style={{ padding: '8px 16px', border: `2px solid ${darkMode ? '#555' : '#000'}`, borderBottom: 'none', background: darkMode ? '#fff' : '#000', color: darkMode ? '#000' : 'white', cursor: 'pointer', marginRight: '2px', fontSize: '14px' }}>
+          Tabs
         </div>
-        <div className="col-md-6">
-          <select 
-            className="form-select mb-3" 
-            value={selectedComponent} 
-            onChange={(e) => setSelectedComponent(e.target.value)}
-          >
-            <option value="">Select Individual Component</option>
-            <option value="carousel">Carousel</option>
-            <option value="tabs">Tabs</option>
-            <option value="accordion">Accordion</option>
-            <option value="modal">Modal/Popup</option>
-          </select>
-          <button 
-            className="btn btn-primary w-100" 
-            onClick={() => generateComponentHTML(selectedComponent)}
-            disabled={!selectedComponent}
-          >
-            Generate Selected Component
-          </button>
+        <div style={{ padding: '8px 16px', border: `2px solid ${darkMode ? '#555' : '#000'}`, borderBottom: 'none', background: darkMode ? '#2d2d2d' : 'white', color: darkMode ? '#fff' : '#000', cursor: 'pointer', marginRight: '2px', fontSize: '14px' }}>
+          Pre-lab Questions
         </div>
+        <a href="/escape-room" style={{ textDecoration: 'none' }}>
+          <div style={{ padding: '8px 16px', border: `2px solid ${darkMode ? '#555' : '#000'}`, borderBottom: 'none', background: darkMode ? '#2d2d2d' : 'white', color: darkMode ? '#fff' : '#000', cursor: 'pointer', marginRight: '2px', fontSize: '14px' }}>
+            Escape Room
+          </div>
+        </a>
+        <a href="/coding-races" style={{ textDecoration: 'none' }}>
+          <div style={{ padding: '8px 16px', border: `2px solid ${darkMode ? '#555' : '#000'}`, borderBottom: 'none', background: darkMode ? '#2d2d2d' : 'white', color: darkMode ? '#fff' : '#000', cursor: 'pointer', marginRight: '2px', fontSize: '14px' }}>
+            Coding Races
+          </div>
+        </a>
+        <a href="/court-room" style={{ textDecoration: 'none' }}>
+          <div style={{ padding: '8px 16px', border: `2px solid ${darkMode ? '#555' : '#000'}`, borderBottom: 'none', background: darkMode ? '#2d2d2d' : 'white', color: darkMode ? '#fff' : '#000', cursor: 'pointer', marginRight: '2px', fontSize: '14px' }}>
+            Court Room
+          </div>
+        </a>
+        <a href="/about" style={{ textDecoration: 'none' }}>
+          <div style={{ padding: '8px 16px', border: `2px solid ${darkMode ? '#555' : '#000'}`, borderBottom: 'none', background: darkMode ? '#2d2d2d' : 'white', color: darkMode ? '#fff' : '#000', cursor: 'pointer', marginRight: '2px', fontSize: '14px' }}>
+            About
+          </div>
+        </a>
       </div>
 
-      {htmlCode && (
-        <div className="mt-4">
-          <h2>Generated HTML Code:</h2>
-          <div className="card">
-            <div className="card-body">
-              <textarea 
-                className="form-control" 
-                value={htmlCode} 
-                readOnly 
-                rows={20}
-                style={{fontSize: '12px', fontFamily: 'monospace'}}
-              />
-            </div>
-          </div>
-          <div className="mt-3">
+      {/* Main Content Area */}
+      <div style={{ display: 'grid', gridTemplateColumns: '200px 300px 1fr', gap: '20px', minHeight: '400px' }}>
+        {/* Left Sidebar - Tabs Headers */}
+        <div style={{ border: `2px solid ${darkMode ? '#555' : '#000'}`, padding: '15px', backgroundColor: darkMode ? '#2d2d2d' : '#f8f8f8' }}>
+          <h4 style={{margin: '0 0 15px 0', fontSize: '16px', color: darkMode ? '#fff' : '#000'}}>Tabs</h4>
+          <div style={{marginBottom: '15px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px'}}>
+            <strong style={{color: darkMode ? '#fff' : '#000'}}>Tabs Headers:</strong>
             <button 
-              className="btn btn-outline-secondary"
-              onClick={() => navigator.clipboard.writeText(htmlCode)}
+              onClick={addTab} 
+              disabled={tabs.length >= 15}
+              style={{
+                background: '#007bff', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '3px', 
+                padding: '4px 8px', 
+                cursor: tabs.length >= 15 ? 'not-allowed' : 'pointer',
+                fontSize: '12px'
+              }}
             >
-              Copy to Clipboard
+              + Add ({tabs.length}/15)
             </button>
           </div>
+          <div>
+            {tabs.map((tab) => (
+              <div key={tab.id} style={{display: 'flex', alignItems: 'center', marginBottom: '2px'}}>
+                <button
+                  style={{
+                    display: 'block',
+                    width: '140px',
+                    padding: '8px 12px',
+                    border: `1px solid ${darkMode ? '#555' : '#000'}`,
+                    background: tab.id === activeTab ? (darkMode ? '#fff' : '#000') : (darkMode ? '#333' : 'white'),
+                    color: tab.id === activeTab ? (darkMode ? '#000' : 'white') : (darkMode ? '#fff' : 'black'),
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontSize: '14px'
+                  }}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  {tab.title}
+                </button>
+                <button
+                  onClick={() => removeTab(tab.id)}
+                  disabled={tabs.length <= 1}
+                  style={{
+                    marginLeft: '5px',
+                    background: '#dc3545',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '3px',
+                    padding: '4px 8px',
+                    cursor: tabs.length <= 1 ? 'not-allowed' : 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  -
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
-      )}
 
-      <div className="mt-5">
-        <h3>Available Components:</h3>
-        <ul className="list-group">
-          <li className="list-group-item">✅ Bootstrap Carousel</li>
-          <li className="list-group-item">✅ Tabs</li>
-          <li className="list-group-item">✅ Accordion</li>
-          <li className="list-group-item">✅ Modal/Popup</li>
-          <li className="list-group-item">✅ Dropdown</li>
-          <li className="list-group-item">✅ Tooltip</li>
-          <li className="list-group-item">✅ Progress Bar</li>
-          <li className="list-group-item">✅ Range Slider</li>
-          <li className="list-group-item">✅ Date Picker</li>
-          <li className="list-group-item">✅ Alerts</li>
-          <li className="list-group-item">✅ Lightbox</li>
-          <li className="list-group-item">✅ Canvas Drawing</li>
-          <li className="list-group-item">✅ CSS Animation (Rotation)</li>
-          <li className="list-group-item">✅ Mermaid Diagrams</li>
-        </ul>
+        {/* Middle - Tab Content */}
+        <div style={{ border: `2px solid ${darkMode ? '#555' : '#000'}`, padding: '15px', backgroundColor: darkMode ? '#2d2d2d' : '#f8f8f8' }}>
+          <h4 style={{margin: '0 0 15px 0', fontSize: '16px', color: darkMode ? '#fff' : '#000'}}>Tabs Content</h4>
+          {tabs.find(tab => tab.id === activeTab) && (
+            <div>
+              <div style={{marginBottom: '10px'}}>
+                <label style={{display: 'block', marginBottom: '5px', fontWeight: 'bold', color: darkMode ? '#fff' : '#000'}}>Tab Title:</label>
+                <input
+                  type="text"
+                  value={tabs.find(tab => tab.id === activeTab)?.title || ''}
+                  onChange={(e) => updateTabTitle(activeTab, e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: `1px solid ${darkMode ? '#555' : '#ccc'}`,
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    backgroundColor: darkMode ? '#333' : '#fff',
+                    color: darkMode ? '#fff' : '#000',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+              <div style={{marginBottom: '15px'}}>
+                <label style={{display: 'block', marginBottom: '5px', fontWeight: 'bold', color: darkMode ? '#fff' : '#000'}}>Tab Content:</label>
+                <textarea
+                  value={tabs.find(tab => tab.id === activeTab)?.content || ''}
+                  onChange={(e) => updateTabContent(activeTab, e.target.value)}
+                  style={{
+                    width: '100%',
+                    height: '150px',
+                    padding: '8px',
+                    border: `1px solid ${darkMode ? '#555' : '#ccc'}`,
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    fontFamily: 'Arial, sans-serif',
+                    resize: 'vertical',
+                    backgroundColor: darkMode ? '#333' : '#fff',
+                    color: darkMode ? '#fff' : '#000',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          
+          <button 
+            onClick={generateHTML}
+            style={{
+              padding: '8px 16px',
+              background: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Generate HTML
+          </button>
+        </div>
+
+        {/* Right - Output */}
+        <div style={{ border: `2px solid ${darkMode ? '#555' : '#000'}`, padding: '10px', backgroundColor: darkMode ? '#2d2d2d' : '#f8f8f8' }}>
+          <h4 style={{margin: '0 0 10px 0', fontSize: '16px', color: darkMode ? '#fff' : '#000'}}>Output</h4>
+          <textarea
+            style={{
+              width: '100%',
+              height: '250px',
+              border: `1px solid ${darkMode ? '#555' : '#000'}`,
+              backgroundColor: darkMode ? '#333' : '#fff',
+              fontFamily: 'Consolas, Monaco, monospace',
+              fontSize: '11px',
+              padding: '8px',
+              color: darkMode ? '#66ccff' : '#0066cc',
+              overflow: 'auto',
+              whiteSpace: 'pre-wrap',
+              boxSizing: 'border-box'
+            }}
+            value={htmlOutput}
+            readOnly
+            placeholder="Generated HTML will appear here..."
+          />
+          {htmlOutput && (
+            <button 
+              style={{
+                padding: '4px 8px',
+                background: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                marginTop: '10px'
+              }}
+              onClick={() => navigator.clipboard.writeText(htmlOutput)}
+            >
+              Copy Code
+            </button>
+          )}
+          <div style={{fontSize: '12px', marginTop: '10px', color: darkMode ? '#aaa' : '#666'}}>
+            Current tabs: {tabs.length} | Max: 15
+          </div>
+        </div>
       </div>
     </div>
   );

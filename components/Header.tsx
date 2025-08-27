@@ -15,10 +15,27 @@ const Header = () => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (darkMode) {
-        document.body.classList.add('dark-mode');
+        document.body.style.backgroundColor = '#1a1a1a';
+        document.body.style.color = '#ffffff';
+        document.documentElement.style.setProperty('--bg-color', '#1a1a1a');
+        document.documentElement.style.setProperty('--text-color', '#ffffff');
+        document.documentElement.style.setProperty('--border-color', '#555');
+        document.documentElement.style.setProperty('--card-bg', '#2d2d2d');
+        document.documentElement.style.setProperty('--input-bg', '#333');
+        document.documentElement.style.setProperty('--footer-bg', '#2d2d2d');
       } else {
-        document.body.classList.remove('dark-mode');
+        document.body.style.backgroundColor = '#ffffff';
+        document.body.style.color = '#000000';
+        document.documentElement.style.setProperty('--bg-color', '#ffffff');
+        document.documentElement.style.setProperty('--text-color', '#000000');
+        document.documentElement.style.setProperty('--border-color', '#000');
+        document.documentElement.style.setProperty('--card-bg', '#f8f8f8');
+        document.documentElement.style.setProperty('--input-bg', '#ffffff');
+        document.documentElement.style.setProperty('--footer-bg', '#f1f1f1');
       }
+      
+      // Dispatch custom event for other components to listen
+      window.dispatchEvent(new CustomEvent('darkModeChange', { detail: { darkMode } }));
     }
   }, [darkMode]);
 
@@ -100,10 +117,10 @@ const Header = () => {
   return (
     <header style={headerStyle}>
       <nav style={navStyle}>
-        <div style={titleStyle}>Title</div>
+        <div style={titleStyle}>CSE3CWA</div>
         
         <div style={rightSectionStyle}>
-          <div style={studentNoStyle}>Student No.</div>
+          <div style={studentNoStyle}>21973913</div>
           
           <button style={toggleButtonStyle} onClick={toggleDarkMode}>
             <span style={{
@@ -130,10 +147,11 @@ const Header = () => {
             
             {menuOpen && (
               <div style={dropdownStyle}>
-                <Link href="/tabs" style={dropdownItemStyle}>Tabs</Link>
+                <Link href="/" style={dropdownItemStyle}>Tabs</Link>
                 <Link href="/pre-lab" style={dropdownItemStyle}>Pre-lab Questions</Link>
                 <Link href="/escape-room" style={dropdownItemStyle}>Escape Room</Link>
                 <Link href="/coding-races" style={dropdownItemStyle}>Coding Races</Link>
+                <Link href="/court-room" style={dropdownItemStyle}>Court Room</Link>
                 <Link href="/about" style={dropdownItemStyle}>About</Link>
               </div>
             )}
