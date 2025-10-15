@@ -1,4 +1,3 @@
-'use client';
 import { useState, useEffect } from 'react';
 import { FaBars } from 'react-icons/fa';
 import Link from 'next/link';

@@ -1,5 +1,3 @@
-'use client';
-
 const EscapeRoomPage = () => {
   return (
     <div>

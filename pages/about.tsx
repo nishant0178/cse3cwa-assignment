@@ -1,4 +1,3 @@
-'use client';
 import { useState, useEffect } from 'react';
 
 const AboutPage = () => {
@@ -299,7 +298,7 @@ const AboutPage = () => {
             <iframe
               width="100%"
               height="400"
-              src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+              src=""
               title="CSE3CWA Assignment 1 - HTML5 Tabs Generator Tutorial"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
