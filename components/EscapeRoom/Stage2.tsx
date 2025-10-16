@@ -8,19 +8,26 @@ import { validateDebuggedCode } from '../../lib/validators';
 interface Stage2Props {
   challenge: Challenge;
   onComplete: () => void;
+  onHintUsed?: () => void;
+  onAttempt?: () => void;
 }
 
-const Stage2 = ({ challenge, onComplete }: Stage2Props) => {
+const Stage2 = ({ challenge, onComplete, onHintUsed, onAttempt }: Stage2Props) => {
   const [userCode, setUserCode] = useState(challenge.buggy || '');
   const [attempts, setAttempts] = useState(0);
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
   const [feedback, setFeedback] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showComputer, setShowComputer] = useState(false);
+  const [showDebugChallenge, setShowDebugChallenge] = useState(false);
 
   const handleSubmit = () => {
     setIsSubmitting(true);
     setAttempts(prev => prev + 1);
+
+    // Notify parent of attempt
+    if (onAttempt) {
+      onAttempt();
+    }
 
     // Validate the code
     const result = validateDebuggedCode(userCode, challenge.testCases || []);
@@ -39,7 +46,16 @@ const Stage2 = ({ challenge, onComplete }: Stage2Props) => {
   const handleShowHint = () => {
     if (currentHintIndex < challenge.hints.length) {
       setCurrentHintIndex(prev => prev + 1);
+
+      // Notify parent of hint usage
+      if (onHintUsed) {
+        onHintUsed();
+      }
     }
+  };
+
+  const handleImageClick = () => {
+    setShowDebugChallenge(true);
   };
 
   return (
@@ -60,7 +76,7 @@ const Stage2 = ({ challenge, onComplete }: Stage2Props) => {
           alignItems: 'center',
           gap: '10px'
         }}>
-          🔒 Stage 2: Debug the Code
+          🐛 Stage 2: Debug the Code
         </h2>
         <div style={{
           fontSize: '14px',
@@ -71,55 +87,73 @@ const Stage2 = ({ challenge, onComplete }: Stage2Props) => {
         </div>
       </div>
 
-      {/* Story element */}
-      {!showComputer ? (
+      {/* Interactive image to unlock debug challenge */}
+      {!showDebugChallenge ? (
         <div style={{
-          backgroundColor: 'rgba(0, 123, 255, 0.1)',
-          border: '2px solid #007bff',
+          backgroundColor: 'rgba(220, 53, 69, 0.1)',
+          border: '2px solid #dc3545',
           borderRadius: '8px',
-          padding: '20px',
+          padding: '40px 20px',
           marginBottom: '20px',
           textAlign: 'center'
         }}>
           <div style={{
-            fontSize: '48px',
-            marginBottom: '15px'
-          }}>
-            💻
-          </div>
-          <div style={{
-            color: '#fff',
-            fontSize: '16px',
-            marginBottom: '15px',
-            lineHeight: '1.6'
-          }}>
-            You spot an old computer terminal in the corner of the room.
-            <br />
-            Its screen flickers with code...
-          </div>
-          <button
-            onClick={() => setShowComputer(true)}
-            style={{
-              padding: '10px 24px',
-              backgroundColor: '#007bff',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s'
-            }}
+            fontSize: '72px',
+            marginBottom: '20px',
+            cursor: 'pointer',
+            transition: 'transform 0.3s',
+            userSelect: 'none'
+          }}
+            onClick={handleImageClick}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#0056b3';
-              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.transform = 'scale(1.1)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#007bff';
               e.currentTarget.style.transform = 'scale(1)';
             }}
           >
-            🖱️ Click the Computer
+            🔒
+          </div>
+          <div style={{
+            color: '#fff',
+            fontSize: '18px',
+            marginBottom: '15px',
+            fontWeight: '600'
+          }}>
+            The Debug Challenge is Locked!
+          </div>
+          <div style={{
+            color: '#ddd',
+            fontSize: '14px',
+            marginBottom: '20px'
+          }}>
+            Click the lock to reveal the buggy code and start debugging.
+          </div>
+          <button
+            onClick={handleImageClick}
+            style={{
+              padding: '14px 32px',
+              backgroundColor: '#dc3545',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#c82333';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#dc3545';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            🔓 Unlock Debug Challenge
           </button>
         </div>
       ) : (
@@ -164,30 +198,12 @@ const Stage2 = ({ challenge, onComplete }: Stage2Props) => {
             </ul>
           </div>
 
-          {/* Code editor */}
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#fff',
-              marginBottom: '8px'
-            }}>
-              Debug This Code:
-            </div>
-            <CodeEditor
-              value={userCode}
-              onChange={setUserCode}
-              placeholder="Fix the bugs in this code..."
-              height="250px"
-            />
-          </div>
-
-          {/* Test cases info */}
+          {/* Test Cases Info */}
           {challenge.testCases && challenge.testCases.length > 0 && (
             <div style={{
               backgroundColor: 'rgba(40, 167, 69, 0.1)',
-              border: '1px solid #28a745',
-              borderRadius: '6px',
+              border: '2px solid #28a745',
+              borderRadius: '8px',
               padding: '12px',
               marginBottom: '20px',
               fontSize: '13px',
@@ -199,6 +215,24 @@ const Stage2 = ({ challenge, onComplete }: Stage2Props) => {
               <div>All tests must pass for the code to be considered bug-free.</div>
             </div>
           )}
+
+          {/* Code Editor */}
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#fff',
+              marginBottom: '8px'
+            }}>
+              Buggy Code (Fix the bugs):
+            </div>
+            <CodeEditor
+              value={userCode}
+              onChange={setUserCode}
+              placeholder="Fix the bugs in this code..."
+              height="300px"
+            />
+          </div>
 
           {/* Feedback */}
           {feedback && (
@@ -233,7 +267,9 @@ const Stage2 = ({ challenge, onComplete }: Stage2Props) => {
               cursor: userCode.trim() && !isSubmitting ? 'pointer' : 'not-allowed',
               width: '100%',
               transition: 'all 0.3s',
-              opacity: isSubmitting ? 0.7 : 1
+              opacity: isSubmitting ? 0.7 : 1,
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
             }}
             onMouseEnter={(e) => {
               if (userCode.trim() && !isSubmitting) {
@@ -250,7 +286,7 @@ const Stage2 = ({ challenge, onComplete }: Stage2Props) => {
               }
             }}
           >
-            {isSubmitting ? 'Running Tests...' : 'Run Code'}
+            {isSubmitting ? 'Testing...' : 'Submit Solution'}
           </button>
         </>
       )}

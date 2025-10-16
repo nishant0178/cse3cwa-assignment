@@ -7,8 +7,8 @@ export interface ValidationResult {
 }
 
 /**
- * Validates code formatting by comparing normalized versions
- * Checks if the logic is the same, then validates formatting
+ * Validates code formatting by checking formatting rules
+ * Checks if the logic is the same, then validates formatting quality
  */
 export function validateFormatting(
   userCode: string,
@@ -29,51 +29,142 @@ export function validateFormatting(
     };
   }
 
-  // Check if formatting matches expected (with some tolerance)
-  const userTrimmed = userCode.trim();
-  const expectedTrimmed = expectedCode.trim();
+  // Clean up code: trim and remove trailing whitespace from each line
+  const cleanLines = (code: string) =>
+    code.trim().split('\n').map(line => line.trimEnd());
 
-  // Split into lines for comparison
-  const userLines = userTrimmed.split('\n');
-  const expectedLines = expectedTrimmed.split('\n');
+  const userLines = cleanLines(userCode);
 
-  if (userLines.length !== expectedLines.length) {
-    return {
-      valid: false,
-      error: `Expected ${expectedLines.length} lines but got ${userLines.length}. Make sure each statement is on the correct line.`
-    };
-  }
+  // Check for basic formatting issues
+  const issues: string[] = [];
 
-  // Check indentation and spacing
-  const indentSize = language === 'python' || language === 'cpp' ? 4 : 2;
+  // 1. Check for consistent indentation (must be 2 or 4 spaces)
+  let detectedIndentSize: number | null = null;
+  const indentSizes: number[] = [];
 
   for (let i = 0; i < userLines.length; i++) {
-    const userLine = userLines[i];
-    const expectedLine = expectedLines[i];
+    const line = userLines[i];
 
-    // Get indentation level
-    const userIndent = userLine.match(/^\s*/)?.[0].length || 0;
-    const expectedIndent = expectedLine.match(/^\s*/)?.[0].length || 0;
+    // Skip empty lines
+    if (line.trim() === '') continue;
 
-    if (userIndent !== expectedIndent) {
-      return {
-        valid: false,
-        error: `Line ${i + 1}: Incorrect indentation. Expected ${expectedIndent} spaces but got ${userIndent}.`
-      };
+    // Get indentation
+    const indentMatch = line.match(/^( +)/);
+    if (indentMatch) {
+      const indentCount = indentMatch[1].length;
+
+      // Detect indent size from first indented line
+      if (detectedIndentSize === null && indentCount > 0) {
+        detectedIndentSize = indentCount;
+
+        // Validate it's 2 or 4 spaces
+        if (detectedIndentSize !== 2 && detectedIndentSize !== 4) {
+          issues.push(`Use either 2 or 4 spaces for indentation (detected ${detectedIndentSize} spaces on line ${i + 1})`);
+        }
+      }
+
+      indentSizes.push(indentCount);
+    }
+  }
+
+  // Check indentation consistency (all indents should be multiples of the base)
+  if (detectedIndentSize !== null && detectedIndentSize > 0) {
+    for (let i = 0; i < userLines.length; i++) {
+      const line = userLines[i];
+      if (line.trim() === '') continue;
+
+      const indentMatch = line.match(/^( +)/);
+      if (indentMatch) {
+        const indentCount = indentMatch[1].length;
+        if (indentCount % detectedIndentSize !== 0) {
+          issues.push(`Line ${i + 1}: Inconsistent indentation (${indentCount} spaces, expected multiple of ${detectedIndentSize})`);
+        }
+      }
+    }
+  }
+
+  // 2. Check for spaces around operators (JavaScript/C++ specific)
+  if (language === 'javascript' || language === 'cpp') {
+    for (let i = 0; i < userLines.length; i++) {
+      const line = userLines[i].trim();
+
+      // Check for missing spaces around binary operators: =, +, -, *, /, >, <, ==, !=
+      // But avoid false positives for negative numbers, increment operators, etc.
+      const operatorPatterns = [
+        { regex: /\w[+\-*/<>=!]=?\w/, message: 'Add spaces around operators' },
+        { regex: /\([^,\s]+,[^\s]/, message: 'Add space after commas in parameters' },
+        { regex: /,\S/, message: 'Add space after commas' }
+      ];
+
+      for (const { regex, message } of operatorPatterns) {
+        if (regex.test(line)) {
+          issues.push(`Line ${i + 1}: ${message}`);
+          break;
+        }
+      }
+    }
+  }
+
+  // 3. Check for proper line breaks (functions should be on multiple lines)
+  const userCodeNormalized = userCode.trim();
+
+  if (language === 'javascript') {
+    // Check if function has opening brace on same line or next line
+    if (/function\s+\w+\([^)]*\)\s*\{/.test(userCodeNormalized)) {
+      // This is good - brace on same line
+    } else if (/function\s+\w+\([^)]*\)\s*\n\s*\{/.test(userCodeNormalized)) {
+      // This is also acceptable - brace on next line
+    } else if (userCodeNormalized.includes('function') && !userCodeNormalized.includes('\n')) {
+      issues.push('Function should be split across multiple lines with proper indentation');
     }
 
-    // Compare trimmed lines
-    if (userLine.trim() !== expectedLine.trim()) {
-      return {
-        valid: false,
-        error: `Line ${i + 1}: Spacing issue. Expected: "${expectedLine.trim()}" but got: "${userLine.trim()}"`
-      };
+    // Check if function body is on its own line
+    if (/\{[^}\n]+return/.test(userCodeNormalized.replace(/\s/g, ''))) {
+      // Body is on same line as opening brace - should be on separate line
+      if (!userCodeNormalized.includes('{\n')) {
+        issues.push('Function body statements should be on separate lines from braces');
+      }
     }
+  }
+
+  // 4. Check for proper bracket placement
+  if (language === 'javascript' || language === 'cpp') {
+    // Count braces
+    const openBraces = (userCodeNormalized.match(/\{/g) || []).length;
+    const closeBraces = (userCodeNormalized.match(/\}/g) || []).length;
+
+    if (openBraces !== closeBraces) {
+      issues.push('Mismatched braces - check your opening and closing brackets');
+    }
+
+    // Check if closing braces are on their own line (for multi-line functions)
+    if (userLines.length > 1) {
+      for (let i = 0; i < userLines.length; i++) {
+        const line = userLines[i];
+        const trimmed = line.trim();
+
+        // If line has closing brace with other content, might be an issue
+        if (trimmed.includes('}') && trimmed !== '}' && !trimmed.startsWith('}')) {
+          // Allow "} else {" or "});" patterns
+          if (!/^\}\s*(else|catch|finally)/.test(trimmed) && trimmed !== '});') {
+            issues.push(`Line ${i + 1}: Closing brace should typically be on its own line`);
+          }
+        }
+      }
+    }
+  }
+
+  // If there are issues, return the first few
+  if (issues.length > 0) {
+    return {
+      valid: false,
+      error: issues.slice(0, 3).join('. ') + (issues.length > 3 ? `... (${issues.length - 3} more issues)` : '')
+    };
   }
 
   return {
     valid: true,
-    message: 'Perfect! Code is properly formatted. 🔓'
+    message: 'Perfect! Code is properly formatted.'
   };
 }
 
@@ -144,7 +235,7 @@ export function validateDebuggedCode(
 
     return {
       valid: true,
-      message: 'All tests passed! Code is bug-free. 🔓'
+      message: 'All tests passed! Code is bug-free.'
     };
   } catch (e: any) {
     return {
@@ -231,7 +322,7 @@ export function validateNumberGeneration(
 
     return {
       valid: true,
-      message: `Perfect! All ${expected.length} numbers generated correctly. 🔓`
+      message: `Perfect! All ${expected.length} numbers generated correctly.`
     };
   } catch (e: any) {
     return {

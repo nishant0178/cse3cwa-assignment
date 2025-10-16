@@ -9,9 +9,11 @@ interface Stage1Props {
   challenge: Challenge;
   language: 'javascript' | 'python' | 'cpp';
   onComplete: () => void;
+  onHintUsed?: () => void;
+  onAttempt?: () => void;
 }
 
-const Stage1 = ({ challenge, language, onComplete }: Stage1Props) => {
+const Stage1 = ({ challenge, language, onComplete, onHintUsed, onAttempt }: Stage1Props) => {
   const [userCode, setUserCode] = useState('');
   const [attempts, setAttempts] = useState(0);
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
@@ -21,6 +23,11 @@ const Stage1 = ({ challenge, language, onComplete }: Stage1Props) => {
   const handleSubmit = () => {
     setIsSubmitting(true);
     setAttempts(prev => prev + 1);
+
+    // Notify parent of attempt
+    if (onAttempt) {
+      onAttempt();
+    }
 
     // Validate the code
     const result = validateFormatting(userCode, challenge.formatted!, language);
@@ -39,6 +46,11 @@ const Stage1 = ({ challenge, language, onComplete }: Stage1Props) => {
   const handleShowHint = () => {
     if (currentHintIndex < challenge.hints.length) {
       setCurrentHintIndex(prev => prev + 1);
+
+      // Notify parent of hint usage
+      if (onHintUsed) {
+        onHintUsed();
+      }
     }
   };
 

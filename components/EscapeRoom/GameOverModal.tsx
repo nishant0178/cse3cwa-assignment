@@ -79,95 +79,83 @@ const GameOverModal = ({
               transform: translateY(0);
             }
           }
-
-          @keyframes confetti {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(500px) rotate(360deg); opacity: 0; }
-          }
         `}
       </style>
 
       <div style={{
         backgroundColor: '#1a1a1a',
-        borderRadius: '20px',
+        borderRadius: '12px',
         padding: '40px',
         maxWidth: '500px',
         width: '90%',
-        border: `4px solid ${won ? '#28a745' : '#dc3545'}`,
-        boxShadow: `0 20px 60px ${won ? 'rgba(40, 167, 69, 0.5)' : 'rgba(220, 53, 69, 0.5)'}`,
-        animation: 'slideUp 0.5s ease',
-        position: 'relative',
-        overflow: 'hidden'
+        border: `3px solid ${won ? '#059669' : '#b91c1c'}`,
+        animation: 'slideUp 0.3s ease',
+        position: 'relative'
       }}>
-        {/* Confetti effect for victory */}
-        {won && (
-          <>
-            {Array.from({ length: 20 }, (_, i) => (
-              <div
-                key={i}
-                style={{
-                  position: 'absolute',
-                  top: '-20px',
-                  left: `${Math.random() * 100}%`,
-                  width: '10px',
-                  height: '10px',
-                  backgroundColor: ['#ff6b6b', '#ffd93d', '#6bcf7f', '#4ecdc4', '#a29bfe'][i % 5],
-                  animation: `confetti ${2 + Math.random() * 2}s linear infinite`,
-                  animationDelay: `${Math.random() * 2}s`
-                }}
-              />
-            ))}
-          </>
-        )}
-
-        {/* Icon */}
+        {/* Status badge */}
         <div style={{
-          fontSize: '80px',
-          textAlign: 'center',
-          marginBottom: '20px'
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
+          backgroundColor: won ? '#059669' : '#b91c1c',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 20px',
+          border: `3px solid ${won ? '#047857' : '#991b1b'}`
         }}>
-          {won ? '🎉' : '⏰'}
+          <span style={{
+            fontSize: '32px',
+            color: '#fff',
+            fontWeight: 'bold'
+          }}>
+            {won ? '✓' : '×'}
+          </span>
         </div>
 
         {/* Title */}
         <h2 style={{
-          fontSize: '32px',
-          fontWeight: 'bold',
-          color: won ? '#28a745' : '#dc3545',
+          fontSize: '28px',
+          fontWeight: '700',
+          color: '#fff',
           textAlign: 'center',
-          marginBottom: '10px'
+          marginBottom: '10px',
+          textTransform: 'uppercase',
+          letterSpacing: '1px'
         }}>
-          {won ? 'YOU ESCAPED!' : 'TIME\'S UP!'}
+          {won ? 'Challenge Complete' : 'Time Expired'}
         </h2>
 
         {/* Subtitle */}
         <p style={{
-          fontSize: '16px',
+          fontSize: '14px',
           color: '#aaa',
           textAlign: 'center',
           marginBottom: '30px',
           lineHeight: '1.5'
         }}>
           {won
-            ? 'Congratulations! You successfully escaped the coding room!'
-            : `You completed ${stagesCompleted} out of ${totalStages} stages. Better luck next time!`}
+            ? 'All stages completed successfully.'
+            : `Completed ${stagesCompleted} of ${totalStages} stages.`}
         </p>
 
         {/* Stats */}
         <div style={{
           backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          borderRadius: '12px',
+          borderRadius: '8px',
           padding: '20px',
           marginBottom: '30px'
         }}>
           <div style={{
-            fontSize: '16px',
+            fontSize: '12px',
             fontWeight: '600',
-            color: '#fff',
+            color: '#888',
             marginBottom: '15px',
-            textAlign: 'center'
+            textAlign: 'center',
+            textTransform: 'uppercase',
+            letterSpacing: '1px'
           }}>
-            📊 Statistics
+            Statistics
           </div>
 
           {/* Time */}
@@ -177,7 +165,7 @@ const GameOverModal = ({
             marginBottom: '10px',
             fontSize: '14px'
           }}>
-            <span style={{ color: '#aaa' }}>⏱️ Time:</span>
+            <span style={{ color: '#aaa' }}>Time:</span>
             <span style={{ color: '#fff', fontWeight: '600' }}>
               {formatTime(timeElapsed)}
               {won && totalTime > 0 && ` / ${formatTime(totalTime)}`}
@@ -191,7 +179,7 @@ const GameOverModal = ({
             marginBottom: '10px',
             fontSize: '14px'
           }}>
-            <span style={{ color: '#aaa' }}>🎯 Stages Completed:</span>
+            <span style={{ color: '#aaa' }}>Stages:</span>
             <span style={{ color: '#fff', fontWeight: '600' }}>
               {stagesCompleted} / {totalStages}
             </span>
@@ -204,7 +192,7 @@ const GameOverModal = ({
             marginBottom: '10px',
             fontSize: '14px'
           }}>
-            <span style={{ color: '#aaa' }}>🔄 Total Attempts:</span>
+            <span style={{ color: '#aaa' }}>Attempts:</span>
             <span style={{ color: '#fff', fontWeight: '600' }}>{attempts}</span>
           </div>
 
@@ -215,7 +203,7 @@ const GameOverModal = ({
             marginBottom: won ? '10px' : '0',
             fontSize: '14px'
           }}>
-            <span style={{ color: '#aaa' }}>💡 Hints Used:</span>
+            <span style={{ color: '#aaa' }}>Hints:</span>
             <span style={{ color: '#fff', fontWeight: '600' }}>{hintsUsed}</span>
           </div>
 
@@ -231,10 +219,10 @@ const GameOverModal = ({
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                fontSize: '16px'
+                fontSize: '15px'
               }}>
-                <span style={{ color: '#ffc107', fontWeight: '600' }}>🏆 Score:</span>
-                <span style={{ color: '#ffc107', fontWeight: 'bold', fontSize: '18px' }}>
+                <span style={{ color: '#ca8a04', fontWeight: '600' }}>Score:</span>
+                <span style={{ color: '#ca8a04', fontWeight: 'bold', fontSize: '17px' }}>
                   {calculateScore()}
                 </span>
               </div>
@@ -245,49 +233,53 @@ const GameOverModal = ({
         {/* Best time badge */}
         {isBestTime && won && (
           <div style={{
-            backgroundColor: 'rgba(255, 193, 7, 0.2)',
-            border: '2px solid #ffc107',
-            borderRadius: '8px',
-            padding: '12px',
+            backgroundColor: 'rgba(202, 138, 4, 0.15)',
+            border: '2px solid #ca8a04',
+            borderRadius: '6px',
+            padding: '10px',
             marginBottom: '20px',
             textAlign: 'center',
-            color: '#ffc107',
-            fontSize: '14px',
-            fontWeight: '600'
+            color: '#ca8a04',
+            fontSize: '12px',
+            fontWeight: '600',
+            textTransform: 'uppercase',
+            letterSpacing: '1px'
           }}>
-            🎖️ NEW PERSONAL BEST!
+            New Personal Best
           </div>
         )}
 
         {/* Buttons */}
         <div style={{
           display: 'flex',
-          gap: '15px'
+          gap: '12px'
         }}>
           <button
             onClick={onPlayAgain}
             style={{
               flex: 1,
               padding: '14px',
-              backgroundColor: '#28a745',
+              backgroundColor: '#059669',
               color: '#fff',
               border: 'none',
-              borderRadius: '8px',
-              fontSize: '16px',
+              borderRadius: '6px',
+              fontSize: '14px',
               fontWeight: '600',
               cursor: 'pointer',
-              transition: 'all 0.3s'
+              transition: 'all 0.2s',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#218838';
+              e.currentTarget.style.backgroundColor = '#047857';
               e.currentTarget.style.transform = 'translateY(-2px)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#28a745';
+              e.currentTarget.style.backgroundColor = '#059669';
               e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
-            🔄 Play Again
+            Play Again
           </button>
 
           <button
@@ -295,25 +287,27 @@ const GameOverModal = ({
             style={{
               flex: 1,
               padding: '14px',
-              backgroundColor: '#6c757d',
+              backgroundColor: '#4b5563',
               color: '#fff',
               border: 'none',
-              borderRadius: '8px',
-              fontSize: '16px',
+              borderRadius: '6px',
+              fontSize: '14px',
               fontWeight: '600',
               cursor: 'pointer',
-              transition: 'all 0.3s'
+              transition: 'all 0.2s',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#5a6268';
+              e.currentTarget.style.backgroundColor = '#374151';
               e.currentTarget.style.transform = 'translateY(-2px)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#6c757d';
+              e.currentTarget.style.backgroundColor = '#4b5563';
               e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
-            🚪 Exit
+            Exit
           </button>
         </div>
       </div>

@@ -37,7 +37,7 @@ const ProgressBar = ({ currentStage, totalStages, stagesCompleted }: ProgressBar
           width: `${progress}%`,
           height: '100%',
           background: 'linear-gradient(90deg, #007bff 0%, #28a745 100%)',
-          transition: 'width 0.5s ease',
+          transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
           borderRadius: '15px',
           position: 'relative',
           overflow: 'hidden'
@@ -103,7 +103,7 @@ const ProgressBar = ({ currentStage, totalStages, stagesCompleted }: ProgressBar
               fontSize: '18px',
               fontWeight: 'bold',
               color: '#fff',
-              transition: 'all 0.3s ease',
+              transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
               boxShadow: stagesCompleted[i] || currentStage === i + 1
                 ? '0 0 15px rgba(0, 123, 255, 0.5)'
                 : 'none'

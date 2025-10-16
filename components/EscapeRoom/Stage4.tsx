@@ -3,9 +3,8 @@ import CodeEditor from './CodeEditor';
 import HintPanel from './HintPanel';
 import FeedbackMessage from './FeedbackMessage';
 import { Challenge, Difficulty } from '../../lib/challenges';
-import { validateNumberGeneration } from '../../lib/validators';
 
-interface Stage3Props {
+interface Stage4Props {
   challenge: Challenge;
   difficulty: Difficulty;
   onComplete: () => void;
@@ -13,21 +12,75 @@ interface Stage3Props {
   onAttempt?: () => void;
 }
 
-const Stage3 = ({ challenge, difficulty, onComplete, onHintUsed, onAttempt }: Stage3Props) => {
+interface ValidationResult {
+  valid: boolean;
+  error?: string;
+  message?: string;
+}
+
+const Stage4 = ({ challenge, difficulty, onComplete, onHintUsed, onAttempt }: Stage4Props) => {
   const [userCode, setUserCode] = useState('');
   const [attempts, setAttempts] = useState(0);
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
   const [feedback, setFeedback] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const getValidationParams = () => {
+  const getTransformationTask = () => {
     switch (difficulty) {
       case 'easy':
-        return { maxNumber: 1000, evenOnly: false, primesOnly: false };
+        return {
+          input: { data: 'CSV', format: 'name,age,city\nJohn,25,NYC\nJane,30,LA' },
+          expectedOutput: [
+            { name: 'John', age: '25', city: 'NYC' },
+            { name: 'Jane', age: '30', city: 'LA' }
+          ],
+          description: 'Convert CSV string to array of objects'
+        };
       case 'medium':
-        return { maxNumber: 1000, evenOnly: true, primesOnly: false };
+        return {
+          input: { data: 'JSON Array', format: '[{"id":1,"value":"a"},{"id":2,"value":"b"}]' },
+          expectedOutput: { '1': 'a', '2': 'b' },
+          description: 'Convert JSON array to key-value object (id: value)'
+        };
       case 'hard':
-        return { maxNumber: 100, evenOnly: false, primesOnly: true };
+        return {
+          input: { data: 'XML-like', format: '<users><user><name>John</name><age>25</age></user></users>' },
+          expectedOutput: [{ name: 'John', age: '25' }],
+          description: 'Parse XML-like string to array of objects'
+        };
+    }
+  };
+
+  const validateTransformation = (userCode: string): ValidationResult => {
+    try {
+      const task = getTransformationTask();
+
+      // Create a function from user code
+      const func = new Function('input', userCode + '\nreturn transform(input);');
+
+      // Execute user's transformation function
+      const result = func(task.input.format);
+
+      // Compare result with expected output
+      const resultStr = JSON.stringify(result);
+      const expectedStr = JSON.stringify(task.expectedOutput);
+
+      if (resultStr === expectedStr) {
+        return {
+          valid: true,
+          message: 'Perfect! Data transformation is correct.'
+        };
+      } else {
+        return {
+          valid: false,
+          error: `Output doesn't match expected format. Expected: ${expectedStr}, Got: ${resultStr}`
+        };
+      }
+    } catch (e: any) {
+      return {
+        valid: false,
+        error: `Error executing code: ${e.message}`
+      };
     }
   };
 
@@ -40,21 +93,15 @@ const Stage3 = ({ challenge, difficulty, onComplete, onHintUsed, onAttempt }: St
       onAttempt();
     }
 
-    const params = getValidationParams();
-    const result = validateNumberGeneration(
-      userCode,
-      params.maxNumber,
-      params.evenOnly,
-      params.primesOnly
-    );
+    const result = validateTransformation(userCode);
 
     if (result.valid) {
-      setFeedback({ message: result.message || 'Perfect! All numbers generated correctly!', type: 'success' });
+      setFeedback({ message: result.message || 'Perfect! Data transformed correctly!', type: 'success' });
       setTimeout(() => {
         onComplete();
       }, 1500);
     } else {
-      setFeedback({ message: result.error || 'Output doesn\'t match expected results. Try again!', type: 'error' });
+      setFeedback({ message: result.error || 'Transformation failed. Try again!', type: 'error' });
       setIsSubmitting(false);
     }
   };
@@ -69,6 +116,8 @@ const Stage3 = ({ challenge, difficulty, onComplete, onHintUsed, onAttempt }: St
       }
     }
   };
+
+  const task = getTransformationTask();
 
   return (
     <div style={{
@@ -88,7 +137,7 @@ const Stage3 = ({ challenge, difficulty, onComplete, onHintUsed, onAttempt }: St
           alignItems: 'center',
           gap: '10px'
         }}>
-          🚀 Stage 3: Final Challenge
+          🔄 Stage 4: Data Transformation
         </h2>
         <div style={{
           fontSize: '14px',
@@ -111,7 +160,7 @@ const Stage3 = ({ challenge, difficulty, onComplete, onHintUsed, onAttempt }: St
         lineHeight: '1.6'
       }}>
         <div style={{ fontSize: '24px', marginBottom: '10px' }}>🚪</div>
-        You're almost there! The door lock shows a keypad waiting for the correct sequence...
+        Final challenge! The door's security system requires data format conversion to unlock...
       </div>
 
       {/* Instructions */}
@@ -131,7 +180,7 @@ const Stage3 = ({ challenge, difficulty, onComplete, onHintUsed, onAttempt }: St
           📋 Task:
         </div>
         <div style={{ color: '#fff', fontSize: '14px', marginBottom: '12px' }}>
-          {challenge.description}
+          {task.description}
         </div>
         <div style={{
           fontSize: '14px',
@@ -154,12 +203,12 @@ const Stage3 = ({ challenge, difficulty, onComplete, onHintUsed, onAttempt }: St
         </ul>
       </div>
 
-      {/* Example code */}
+      {/* Input/Output Example */}
       <div style={{
         backgroundColor: 'rgba(40, 167, 69, 0.1)',
-        border: '1px solid #28a745',
-        borderRadius: '6px',
-        padding: '12px',
+        border: '2px solid #28a745',
+        borderRadius: '8px',
+        padding: '15px',
         marginBottom: '20px',
         fontSize: '13px',
         color: '#ddd'
@@ -167,14 +216,37 @@ const Stage3 = ({ challenge, difficulty, onComplete, onHintUsed, onAttempt }: St
         <div style={{ color: '#28a745', fontWeight: '600', marginBottom: '6px' }}>
           💡 Example:
         </div>
-        <code style={{ color: '#6be', fontSize: '12px' }}>
-          for (let i = 0; i &lt;= 1000; i++) {'{'}<br />
-          &nbsp;&nbsp;console.log(i);<br />
-          {'}'}
-        </code>
+        <div style={{ marginBottom: '10px' }}>
+          <strong style={{ color: '#fff' }}>Input ({task.input.data}):</strong>
+          <pre style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            padding: '10px',
+            borderRadius: '4px',
+            marginTop: '5px',
+            overflow: 'auto',
+            fontSize: '12px',
+            color: '#6be'
+          }}>
+            {task.input.format}
+          </pre>
+        </div>
+        <div>
+          <strong style={{ color: '#fff' }}>Expected Output:</strong>
+          <pre style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            padding: '10px',
+            borderRadius: '4px',
+            marginTop: '5px',
+            overflow: 'auto',
+            fontSize: '12px',
+            color: '#6be'
+          }}>
+            {JSON.stringify(task.expectedOutput, null, 2)}
+          </pre>
+        </div>
       </div>
 
-      {/* Code editor */}
+      {/* Code Editor */}
       <div style={{ marginBottom: '20px' }}>
         <div style={{
           fontSize: '14px',
@@ -182,13 +254,20 @@ const Stage3 = ({ challenge, difficulty, onComplete, onHintUsed, onAttempt }: St
           color: '#fff',
           marginBottom: '8px'
         }}>
-          Write Your Code:
+          Your Transformation Code:
+        </div>
+        <div style={{
+          fontSize: '12px',
+          color: '#aaa',
+          marginBottom: '8px'
+        }}>
+          Write a function named <code style={{ color: '#6be', backgroundColor: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '3px' }}>transform(input)</code> that converts the data
         </div>
         <CodeEditor
           value={userCode}
           onChange={setUserCode}
-          placeholder="// Write your code here to generate the numbers...\n\nfor (let i = 0; i <= 1000; i++) {\n  console.log(i);\n}"
-          height="250px"
+          placeholder="function transform(input) {\n  // Your transformation code here\n  return result;\n}"
+          height="300px"
         />
       </div>
 
@@ -225,7 +304,9 @@ const Stage3 = ({ challenge, difficulty, onComplete, onHintUsed, onAttempt }: St
           cursor: userCode.trim() && !isSubmitting ? 'pointer' : 'not-allowed',
           width: '100%',
           transition: 'all 0.3s',
-          opacity: isSubmitting ? 0.7 : 1
+          opacity: isSubmitting ? 0.7 : 1,
+          textTransform: 'uppercase',
+          letterSpacing: '1px'
         }}
         onMouseEnter={(e) => {
           if (userCode.trim() && !isSubmitting) {
@@ -242,10 +323,10 @@ const Stage3 = ({ challenge, difficulty, onComplete, onHintUsed, onAttempt }: St
           }
         }}
       >
-        {isSubmitting ? 'Checking Output...' : 'Run Code'}
+        {isSubmitting ? 'Testing Transformation...' : 'Submit Solution'}
       </button>
     </div>
   );
 };
 
-export default Stage3;
+export default Stage4;

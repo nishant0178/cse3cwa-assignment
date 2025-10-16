@@ -4,6 +4,7 @@ import ProgressBar from '../components/EscapeRoom/ProgressBar';
 import Stage1 from '../components/EscapeRoom/Stage1';
 import Stage2 from '../components/EscapeRoom/Stage2';
 import Stage3 from '../components/EscapeRoom/Stage3';
+import Stage4 from '../components/EscapeRoom/Stage4';
 import GameOverModal from '../components/EscapeRoom/GameOverModal';
 import PauseModal from '../components/EscapeRoom/PauseModal';
 import { getChallenge, getTimerDuration, Language, Difficulty } from '../lib/challenges';
@@ -13,8 +14,8 @@ type GameState = 'setup' | 'playing' | 'paused' | 'won' | 'lost';
 const EscapeRoomPage = () => {
   // Game state
   const [gameState, setGameState] = useState<GameState>('setup');
-  const [currentStage, setCurrentStage] = useState<1 | 2 | 3>(1);
-  const [stagesCompleted, setStagesCompleted] = useState<boolean[]>([false, false, false]);
+  const [currentStage, setCurrentStage] = useState<1 | 2 | 3 | 4>(1);
+  const [stagesCompleted, setStagesCompleted] = useState<boolean[]>([false, false, false, false]);
 
   // Settings
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
@@ -62,7 +63,7 @@ const EscapeRoomPage = () => {
     setTimerDuration(duration);
     setTimeRemaining(duration);
     setCurrentStage(1);
-    setStagesCompleted([false, false, false]);
+    setStagesCompleted([false, false, false, false]);
     setTotalAttempts(0);
     setTotalHintsUsed(0);
     setGameState('playing');
@@ -83,7 +84,7 @@ const EscapeRoomPage = () => {
     newStagesCompleted[currentStage - 1] = true;
     setStagesCompleted(newStagesCompleted);
 
-    if (currentStage === 3) {
+    if (currentStage === 4) {
       // Game won!
       setIsTimerRunning(false);
       setGameState('won');
@@ -96,7 +97,7 @@ const EscapeRoomPage = () => {
       }
     } else {
       // Move to next stage
-      setCurrentStage((prev) => (prev + 1) as 1 | 2 | 3);
+      setCurrentStage((prev) => (prev + 1) as 1 | 2 | 3 | 4);
     }
   };
 
@@ -120,41 +121,61 @@ const EscapeRoomPage = () => {
     setTimeRemaining(0);
   };
 
+  const handleHintUsed = () => {
+    setTotalHintsUsed(prev => prev + 1);
+  };
+
+  const handleAttempt = () => {
+    setTotalAttempts(prev => prev + 1);
+  };
+
   // Render setup screen
   if (gameState === 'setup') {
     return (
       <div style={{
         minHeight: '100vh',
-        background: darkMode
-          ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
-          : 'linear-gradient(135deg, #2d3436 0%, #000000 100%)',
+        backgroundImage: 'url(/images/escape-room-bg.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
         padding: '40px 20px',
-        color: '#fff'
+        color: '#fff',
+        position: 'relative'
       }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        {/* Dark overlay for readability */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 0
+        }} />
+
+        <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>🔐</div>
             <h1 style={{
-              fontSize: '48px',
-              fontWeight: 'bold',
+              fontSize: '36px',
+              fontWeight: '700',
               marginBottom: '15px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              color: '#fff',
+              textTransform: 'uppercase',
+              letterSpacing: '2px'
             }}>
-              Escape Room Challenge
+              Escape Room: Code Challenge
             </h1>
             <p style={{
-              fontSize: '18px',
-              color: '#aaa',
+              fontSize: '16px',
+              color: '#ccc',
               maxWidth: '600px',
               margin: '0 auto',
               lineHeight: '1.6'
             }}>
-              You're trapped in an abandoned coding lab. Solve three programming challenges
-              before time runs out to escape!
+              Complete four programming challenges before time expires.
+              <br />
+              Choose difficulty and language to begin.
             </p>
           </div>
 
@@ -187,15 +208,16 @@ const EscapeRoomPage = () => {
                     style={{
                       flex: 1,
                       padding: '16px',
-                      backgroundColor: difficulty === diff ? '#007bff' : 'rgba(255, 255, 255, 0.1)',
+                      backgroundColor: difficulty === diff ? '#2563eb' : 'rgba(255, 255, 255, 0.1)',
                       color: '#fff',
-                      border: `2px solid ${difficulty === diff ? '#007bff' : 'rgba(255, 255, 255, 0.2)'}`,
+                      border: `2px solid ${difficulty === diff ? '#2563eb' : 'rgba(255, 255, 255, 0.2)'}`,
                       borderRadius: '8px',
                       fontSize: '14px',
                       fontWeight: '600',
                       cursor: 'pointer',
                       transition: 'all 0.3s',
-                      textTransform: 'capitalize'
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px'
                     }}
                     onMouseEnter={(e) => {
                       if (difficulty !== diff) {
@@ -208,12 +230,9 @@ const EscapeRoomPage = () => {
                       }
                     }}
                   >
-                    <div style={{ fontSize: '20px', marginBottom: '5px' }}>
-                      {diff === 'easy' ? '⭐' : diff === 'medium' ? '⭐⭐' : '⭐⭐⭐'}
-                    </div>
                     {diff}
-                    <div style={{ fontSize: '12px', color: '#aaa', marginTop: '4px' }}>
-                      {diff === 'easy' ? '45 min' : diff === 'medium' ? '30 min' : '20 min'}
+                    <div style={{ fontSize: '12px', color: '#aaa', marginTop: '8px', textTransform: 'none', letterSpacing: 'normal' }}>
+                      {diff === 'easy' ? '45 minutes' : diff === 'medium' ? '30 minutes' : '20 minutes'}
                     </div>
                   </button>
                 ))}
@@ -239,14 +258,16 @@ const EscapeRoomPage = () => {
                     style={{
                       flex: 1,
                       padding: '14px',
-                      backgroundColor: language === lang ? '#28a745' : 'rgba(255, 255, 255, 0.1)',
+                      backgroundColor: language === lang ? '#059669' : 'rgba(255, 255, 255, 0.1)',
                       color: '#fff',
-                      border: `2px solid ${language === lang ? '#28a745' : 'rgba(255, 255, 255, 0.2)'}`,
+                      border: `2px solid ${language === lang ? '#059669' : 'rgba(255, 255, 255, 0.2)'}`,
                       borderRadius: '8px',
                       fontSize: '14px',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      transition: 'all 0.3s'
+                      transition: 'all 0.3s',
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px'
                     }}
                     onMouseEnter={(e) => {
                       if (language !== lang) {
@@ -264,7 +285,7 @@ const EscapeRoomPage = () => {
                 ))}
               </div>
               <div style={{ fontSize: '12px', color: '#888', marginTop: '8px' }}>
-                Note: Stages 2 & 3 use JavaScript only
+                Note: Stages 2, 3 & 4 use JavaScript only
               </div>
             </div>
 
@@ -302,15 +323,17 @@ const EscapeRoomPage = () => {
             {/* Best time display */}
             {bestTime && (
               <div style={{
-                backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                border: '2px solid #ffc107',
+                backgroundColor: 'rgba(202, 138, 4, 0.1)',
+                border: '2px solid #ca8a04',
                 borderRadius: '8px',
                 padding: '12px',
                 marginBottom: '20px',
                 textAlign: 'center',
-                fontSize: '14px'
+                fontSize: '13px',
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
               }}>
-                🏆 Your Best Time: <span style={{ fontWeight: '600', color: '#ffc107' }}>
+                Personal Best: <span style={{ fontWeight: '700', color: '#ca8a04' }}>
                   {Math.floor(bestTime / 60)}:{(bestTime % 60).toString().padStart(2, '0')}
                 </span>
               </div>
@@ -322,28 +345,27 @@ const EscapeRoomPage = () => {
               style={{
                 width: '100%',
                 padding: '18px',
-                backgroundColor: '#28a745',
+                backgroundColor: '#059669',
                 color: '#fff',
                 border: 'none',
-                borderRadius: '10px',
-                fontSize: '18px',
-                fontWeight: 'bold',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: '700',
                 cursor: 'pointer',
                 transition: 'all 0.3s',
-                boxShadow: '0 4px 15px rgba(40, 167, 69, 0.4)'
+                textTransform: 'uppercase',
+                letterSpacing: '1.5px'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#218838';
+                e.currentTarget.style.backgroundColor = '#047857';
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(40, 167, 69, 0.6)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#28a745';
+                e.currentTarget.style.backgroundColor = '#059669';
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(40, 167, 69, 0.4)';
               }}
             >
-              🚀 Start Game
+              Start Challenge
             </button>
           </div>
         </div>
@@ -361,14 +383,26 @@ const EscapeRoomPage = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: darkMode
-        ? 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)'
-        : 'linear-gradient(135deg, #000000 0%, #1a1a2e 50%, #16213e 100%)',
+      backgroundImage: 'url(/images/escape-room-bg.jpg)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
       padding: '20px',
       color: '#fff',
       position: 'relative'
     }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+      {/* Dark overlay for readability */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: 0
+      }} />
+
+      <div style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
         {/* Control buttons */}
         <div style={{
           display: 'flex',
@@ -381,34 +415,38 @@ const EscapeRoomPage = () => {
             disabled={gameState !== 'playing'}
             style={{
               padding: '10px 20px',
-              backgroundColor: '#ffc107',
-              color: '#000',
+              backgroundColor: '#ca8a04',
+              color: '#fff',
               border: 'none',
               borderRadius: '6px',
-              fontSize: '14px',
+              fontSize: '12px',
               fontWeight: '600',
               cursor: gameState === 'playing' ? 'pointer' : 'not-allowed',
               opacity: gameState === 'playing' ? 1 : 0.5,
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
             }}
           >
-            ⏸️ Pause
+            Pause
           </button>
           <button
             onClick={handleExit}
             style={{
               padding: '10px 20px',
-              backgroundColor: '#dc3545',
+              backgroundColor: '#b91c1c',
               color: '#fff',
               border: 'none',
               borderRadius: '6px',
-              fontSize: '14px',
+              fontSize: '12px',
               fontWeight: '600',
               cursor: 'pointer',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
             }}
           >
-            🚪 Exit
+            Exit
           </button>
         </div>
 
@@ -425,7 +463,7 @@ const EscapeRoomPage = () => {
         {/* Progress bar */}
         <ProgressBar
           currentStage={currentStage}
-          totalStages={3}
+          totalStages={4}
           stagesCompleted={stagesCompleted}
         />
 
@@ -436,12 +474,16 @@ const EscapeRoomPage = () => {
               challenge={challenge}
               language={language}
               onComplete={handleStageComplete}
+              onHintUsed={handleHintUsed}
+              onAttempt={handleAttempt}
             />
           )}
           {currentStage === 2 && (
             <Stage2
               challenge={challenge}
               onComplete={handleStageComplete}
+              onHintUsed={handleHintUsed}
+              onAttempt={handleAttempt}
             />
           )}
           {currentStage === 3 && (
@@ -449,6 +491,17 @@ const EscapeRoomPage = () => {
               challenge={challenge}
               difficulty={difficulty}
               onComplete={handleStageComplete}
+              onHintUsed={handleHintUsed}
+              onAttempt={handleAttempt}
+            />
+          )}
+          {currentStage === 4 && (
+            <Stage4
+              challenge={challenge}
+              difficulty={difficulty}
+              onComplete={handleStageComplete}
+              onHintUsed={handleHintUsed}
+              onAttempt={handleAttempt}
             />
           )}
         </div>
@@ -459,7 +512,7 @@ const EscapeRoomPage = () => {
         <PauseModal
           timeRemaining={timeRemaining}
           currentStage={currentStage}
-          totalStages={3}
+          totalStages={4}
           stagesCompleted={stagesCompleted}
           hintsUsed={totalHintsUsed}
           attempts={totalAttempts}
@@ -475,7 +528,7 @@ const EscapeRoomPage = () => {
           timeElapsed={timerDuration - timeRemaining}
           totalTime={timerDuration}
           stagesCompleted={stagesCompleted.filter(Boolean).length}
-          totalStages={3}
+          totalStages={4}
           hintsUsed={totalHintsUsed}
           attempts={totalAttempts}
           onPlayAgain={handleRestart}

@@ -15,6 +15,7 @@ export interface StageDefinition {
   stage1: Challenge;
   stage2: Challenge;
   stage3: Challenge;
+  stage4: Challenge;
 }
 
 export const challenges = {
@@ -69,6 +70,21 @@ export const challenges = {
           'Make sure your loop condition uses <= 1000 (not < 1000)',
           'Use console.log(i) inside the loop to print each number'
         ]
+      },
+      stage4: {
+        description: 'Write a function to transform CSV data into an array of objects.',
+        requirements: [
+          'Create a function named transform(input)',
+          'Parse CSV format: "name,age,city\\nJohn,25,NYC\\nJane,30,LA"',
+          'Return array of objects with properties: name, age, city',
+          'Handle the header row correctly'
+        ],
+        hints: [
+          'Split the input by newline characters (\\n) to get rows',
+          'The first row contains the headers (column names)',
+          'For each data row, create an object mapping headers to values',
+          'Use split(",") to separate values in each row'
+        ]
       }
     },
     medium: {
@@ -120,6 +136,21 @@ export const challenges = {
           'You can increment by 2 in your loop: i += 2',
           'Start at 0 and increment by 2 each time',
           'Or use a condition to check if (i % 2 === 0)'
+        ]
+      },
+      stage4: {
+        description: 'Write a function to transform JSON array into a key-value object.',
+        requirements: [
+          'Create a function named transform(input)',
+          'Parse JSON string: \'[{"id":1,"value":"a"},{"id":2,"value":"b"}]\'',
+          'Return object mapping id to value: {\'1\': \'a\', \'2\': \'b\'}',
+          'Handle JSON parsing correctly'
+        ],
+        hints: [
+          'First parse the JSON string using JSON.parse()',
+          'Create an empty result object',
+          'Loop through the array and map each id to its value',
+          'Use bracket notation to set properties: result[obj.id] = obj.value'
         ]
       }
     },
@@ -174,6 +205,21 @@ export const challenges = {
           'Start checking from 2 (the first prime number)',
           'For each number, check if it has any divisors from 2 to sqrt(n)'
         ]
+      },
+      stage4: {
+        description: 'Write a function to parse XML-like string into array of objects.',
+        requirements: [
+          'Create a function named transform(input)',
+          'Parse XML string: \'<users><user><name>John</name><age>25</age></user></users>\'',
+          'Extract user data and return array: [{name: "John", age: "25"}]',
+          'Handle nested XML tags correctly'
+        ],
+        hints: [
+          'Use regular expressions to extract tag contents',
+          'Match patterns like <name>content</name>',
+          'Extract the name and age values from between the tags',
+          'Create an object for each user and push to result array'
+        ]
       }
     }
   },
@@ -194,7 +240,10 @@ export const challenges = {
           'Add spaces between parameters',
           'The return statement should be indented under the def'
         ]
-      }
+      },
+      stage2: { description: 'Placeholder', requirements: [], hints: [] },
+      stage3: { description: 'Placeholder', requirements: [], hints: [] },
+      stage4: { description: 'Placeholder', requirements: [], hints: [] }
     },
     medium: {
       stage1: {
@@ -212,7 +261,10 @@ export const challenges = {
           'Each nested level adds 4 more spaces',
           'The return statements should be indented under if/else'
         ]
-      }
+      },
+      stage2: { description: 'Placeholder', requirements: [], hints: [] },
+      stage3: { description: 'Placeholder', requirements: [], hints: [] },
+      stage4: { description: 'Placeholder', requirements: [], hints: [] }
     },
     hard: {
       stage1: {
@@ -230,7 +282,10 @@ export const challenges = {
           'Each level of nesting adds 4 spaces',
           'Split the complex line into multiple lines'
         ]
-      }
+      },
+      stage2: { description: 'Placeholder', requirements: [], hints: [] },
+      stage3: { description: 'Placeholder', requirements: [], hints: [] },
+      stage4: { description: 'Placeholder', requirements: [], hints: [] }
     }
   },
   cpp: {
@@ -250,7 +305,10 @@ export const challenges = {
           'Add spaces between parameters and around operators',
           'The return statement should be indented inside the function'
         ]
-      }
+      },
+      stage2: { description: 'Placeholder', requirements: [], hints: [] },
+      stage3: { description: 'Placeholder', requirements: [], hints: [] },
+      stage4: { description: 'Placeholder', requirements: [], hints: [] }
     },
     medium: {
       stage1: {
@@ -268,7 +326,10 @@ export const challenges = {
           'Nested code adds 4 more spaces of indentation',
           'Add spaces around comparison and arithmetic operators'
         ]
-      }
+      },
+      stage2: { description: 'Placeholder', requirements: [], hints: [] },
+      stage3: { description: 'Placeholder', requirements: [], hints: [] },
+      stage4: { description: 'Placeholder', requirements: [], hints: [] }
     },
     hard: {
       stage1: {
@@ -286,7 +347,10 @@ export const challenges = {
           'Each nesting level adds 4 spaces',
           'Add spaces around operators and after commas'
         ]
-      }
+      },
+      stage2: { description: 'Placeholder', requirements: [], hints: [] },
+      stage3: { description: 'Placeholder', requirements: [], hints: [] },
+      stage4: { description: 'Placeholder', requirements: [], hints: [] }
     }
   }
 };
@@ -294,7 +358,7 @@ export const challenges = {
 export type Language = 'javascript' | 'python' | 'cpp';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
-export function getChallenge(language: Language, difficulty: Difficulty, stage: 1 | 2 | 3): Challenge {
+export function getChallenge(language: Language, difficulty: Difficulty, stage: 1 | 2 | 3 | 4): Challenge {
   const difficultySet = challenges[language][difficulty];
   return difficultySet[`stage${stage}` as keyof typeof difficultySet] as Challenge;
 }

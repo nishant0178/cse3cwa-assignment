@@ -81,13 +81,14 @@ const CodeEditor = ({
           // Handle Tab key for indentation
           if (e.key === 'Tab') {
             e.preventDefault();
-            const start = e.currentTarget.selectionStart;
-            const end = e.currentTarget.selectionEnd;
+            const textarea = e.currentTarget;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
             const newValue = value.substring(0, start) + '  ' + value.substring(end);
             onChange(newValue);
             // Set cursor position after the inserted spaces
             setTimeout(() => {
-              e.currentTarget.selectionStart = e.currentTarget.selectionEnd = start + 2;
+              textarea.selectionStart = textarea.selectionEnd = start + 2;
             }, 0);
           }
         }}
