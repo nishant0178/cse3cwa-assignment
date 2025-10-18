@@ -1,0 +1,55 @@
+// Prisma Schema for Escape Room Leaderboard
+// This defines the database structure for score tracking
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Score Model - Stores completed game scores
+model Score {
+  id              String    @id @default(cuid())
+
+  // Player Information
+  playerName      String?   // Optional - null for anonymous players
+
+  // Game Configuration
+  difficulty      Difficulty
+  language        Language
+
+  // Performance Metrics
+  completionTime  Int       @default(0)  // Time in seconds to complete all 4 stages
+  totalAttempts   Int       @default(0)  // Total number of attempts across all stages
+  totalHints      Int       @default(0)  // Total number of hints used
+
+  // Timestamp
+  completedAt     DateTime  @default(now())
+
+  // Indexes for optimized queries
+  @@index([difficulty])        // Fast filtering by difficulty
+  @@index([completionTime])    // Fast sorting by completion time (leaderboard)
+  @@index([completedAt])       // Fast sorting by date (recent scores)
+  @@index([language])          // Fast filtering by language
+
+  // Composite indexes for common query patterns
+  @@index([difficulty, completionTime])  // Leaderboard per difficulty
+  @@index([language, completionTime])    // Leaderboard per language
+}
+
+// Enum: Game Difficulty Levels
+enum Difficulty {
+  easy    // 45 minutes timer
+  medium  // 30 minutes timer
+  hard    // 20 minutes timer
+}
+
+// Enum: Programming Languages
+enum Language {
+  javascript  // JavaScript/TypeScript
+  python      // Python
+  cpp         // C++
+}

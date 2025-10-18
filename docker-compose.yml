@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: escaperoom-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-escaperoom_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-escaperoom_db}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-escaperoom_user} -d ${POSTGRES_DB:-escaperoom_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: escaperoom-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-escaperoom_user}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-escaperoom_db}?schema=public
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api/scores}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - app_logs:/app/logs
+    networks:
+      - app-network
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        npx prisma migrate deploy &&
+        npx prisma generate &&
+        echo 'Starting application...' &&
+        node server.js
+      "
+
+  # pgAdmin - Database Management UI (Optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: escaperoom-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@escaperoom.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+    profiles:
+      - tools
+
+# Named Volumes for Persistent Storage
+volumes:
+  postgres_data:
+    driver: local
+    name: escaperoom_postgres_data
+
+  app_logs:
+    driver: local
+    name: escaperoom_logs
+
+  pgadmin_data:
+    driver: local
+    name: escaperoom_pgadmin_data
+
+# Networks
+networks:
+  app-network:
+    driver: bridge
+    name: escaperoom_network
