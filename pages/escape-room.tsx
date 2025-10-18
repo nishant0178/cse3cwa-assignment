@@ -12,47 +12,32 @@ import { getChallenge, getTimerDuration, Language, Difficulty } from '../lib/cha
 type GameState = 'setup' | 'playing' | 'paused' | 'won' | 'lost';
 
 const EscapeRoomPage = () => {
-  // Game state
   const [gameState, setGameState] = useState<GameState>('setup');
   const [currentStage, setCurrentStage] = useState<1 | 2 | 3 | 4>(1);
   const [stagesCompleted, setStagesCompleted] = useState<boolean[]>([false, false, false, false]);
 
-  // Settings
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [language, setLanguage] = useState<Language>('javascript');
   const [customTimerMinutes, setCustomTimerMinutes] = useState<number | ''>('');
 
-  // Timer
-  const [timerDuration, setTimerDuration] = useState(0); // in seconds
+  const [timerDuration, setTimerDuration] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
-  // Stats
   const [totalAttempts, setTotalAttempts] = useState(0);
   const [totalHintsUsed, setTotalHintsUsed] = useState(0);
   const [bestTime, setBestTime] = useState<number | null>(null);
-
-  // Dark mode
   const [darkMode, setDarkMode] = useState(false);
 
-  // Load best time from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('escapeRoomBestTime');
-    if (saved) {
-      setBestTime(parseInt(saved));
-    }
+    if (saved) setBestTime(parseInt(saved));
   }, []);
 
-  // Dark mode listener
   useEffect(() => {
-    const handleDarkModeChange = (event: CustomEvent) => {
-      setDarkMode(event.detail.darkMode);
-    };
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('darkModeChange', handleDarkModeChange as EventListener);
-      return () => window.removeEventListener('darkModeChange', handleDarkModeChange as EventListener);
-    }
+    const handleDarkMode = (e: any) => setDarkMode(e.detail.darkMode);
+    window.addEventListener('darkModeChange', handleDarkMode);
+    return () => window.removeEventListener('darkModeChange', handleDarkMode);
   }, []);
 
   const handleStartGame = () => {
@@ -80,23 +65,20 @@ const EscapeRoomPage = () => {
   }, []);
 
   const handleStageComplete = () => {
-    const newStagesCompleted = [...stagesCompleted];
-    newStagesCompleted[currentStage - 1] = true;
-    setStagesCompleted(newStagesCompleted);
+    const newStages = [...stagesCompleted];
+    newStages[currentStage - 1] = true;
+    setStagesCompleted(newStages);
 
     if (currentStage === 4) {
-      // Game won!
       setIsTimerRunning(false);
       setGameState('won');
 
-      // Check if this is a new best time
       const timeElapsed = timerDuration - timeRemaining;
       if (!bestTime || timeElapsed < bestTime) {
         setBestTime(timeElapsed);
         localStorage.setItem('escapeRoomBestTime', timeElapsed.toString());
       }
     } else {
-      // Move to next stage
       setCurrentStage((prev) => (prev + 1) as 1 | 2 | 3 | 4);
     }
   };

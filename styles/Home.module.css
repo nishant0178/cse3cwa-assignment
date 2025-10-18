@@ -1,0 +1,179 @@
+/* Main page styles */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.mainNav {
+  display: flex;
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 20px;
+}
+
+.navTab {
+  padding: 8px 16px;
+  border: 2px solid var(--border-color);
+  border-bottom: none;
+  cursor: pointer;
+  margin-right: 2px;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.navTab.active {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 200px 300px 1fr;
+  gap: 20px;
+  min-height: 400px;
+}
+
+.sidebar {
+  border: 2px solid var(--border-color);
+  padding: 15px;
+  background-color: var(--card-bg);
+}
+
+.sidebar h4 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+}
+
+.tabButton {
+  display: block;
+  width: 140px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+  background: white;
+  margin-bottom: 2px;
+}
+
+.tabButton.active {
+  background: black;
+  color: white;
+}
+
+.addButton {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.removeButton {
+  margin-left: 5px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.removeButton:disabled,
+.addButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.middlePanel {
+  border: 2px solid var(--border-color);
+  padding: 15px;
+  background-color: var(--card-bg);
+}
+
+.input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+.textarea {
+  width: 100%;
+  height: 150px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  resize: vertical;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  box-sizing: border-box;
+}
+
+.generateButton {
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.outputPanel {
+  border: 2px solid var(--border-color);
+  padding: 10px;
+  background-color: var(--card-bg);
+}
+
+.outputArea {
+  width: 100%;
+  height: 250px;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 11px;
+  padding: 8px;
+  color: #0066cc;
+  overflow: auto;
+  white-space: pre-wrap;
+  box-sizing: border-box;
+}
+
+.buttonGroup {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.copyButton {
+  padding: 4px 8px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.downloadButton {
+  padding: 4px 8px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}

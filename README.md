@@ -1,108 +1,97 @@
-# CSE3CWA Assignment 1 
+# CSE3CWA Assignment 1
 
-**Student Name:** Nishant Singh  
-**Student Number:** 21973913  
-**Assignment:** Assignment 1 - 
+**Name:** Nishant Singh
+**Student ID:** 21973913
 
-## Project Overview
+## What is this?
 
-A Next.js app that creates HTML5 tabs. You can make up to 15 tabs and customize them however you want.
+This is my first assignment for CSE3CWA. Basically it's a Next.js app that lets you create HTML tabs. You can make up to 15 tabs, edit them, and then download the HTML file to submit on MOODLE.
 
-## Features Implemented
-
-### User Interface
-- Navigation bar with different sections
-- Header with dark mode and menu
-- Footer with my info
-- About page
-
-### Themes
-- Dark and light modes
-- Saves your preference
-
-### Menu
-- Hamburger menu that rotates when clicked
-- Works on all screen sizes
-
-### Tab Features
-- Add/remove tabs (up to 15)
-- Edit tab titles and content
-- Automatically saves your work
-
-### HTML Output
-- Generates complete HTML files
-- Uses inline CSS only
-- Works in MOODLE
-- Copy or download the code
-
-### Git Stuff
-- Multiple commits
-- Everything is in the repo
-
-## Technology Stack
-
-- **Framework:** Next.js 15.5.0 with Turbopack
-- **Language:** TypeScript
-- **Styling:** Inline CSS and CSS-in-JS
-- **Icons:** React Icons
-- **Storage:** Browser localStorage for data persistence
-
-## How to Run
+## Running it
 
 ```bash
 npm install
 npm run dev
 ```
 
-That's it! Open localhost:3000 in your browser.
+Then go to http://localhost:3000
 
-## How to Use
+## Features
 
-1. Click + to add tabs (max 15)
-2. Edit tab titles and content
-3. Click Generate HTML
-4. Copy or download the HTML file
-5. Use it in MOODLE
+- Create/edit/delete tabs (max 15)
+- Dark mode toggle
+- Saves your tabs in localStorage so you don't lose them
+- Generates standalone HTML with inline CSS
+- Download or copy the generated code
+- Works on MOODLE (thats the important part lol)
 
-The generated HTML has all CSS inline and works everywhere.
+## What I built
 
-## File Structure
-
-```
-project/
-├── components/
-│   ├── Header.tsx          # Main navigation header
-│   └── Footer.tsx          # Site footer
-├── pages/
-│   ├── index.tsx           # Main tabs generator interface
-│   ├── about.tsx           # About page with student info
-│   ├── court-room.tsx      # Court room page (empty)
-│   ├── escape-room.tsx     # Escape room page (empty)  
-│   ├── coding-races.tsx    # Coding races page (empty)
-│   └── _app.tsx            # Next.js app wrapper
-├── public/                 # Static assets
-├── package.json            # Dependencies and scripts
-├── next.config.ts          # Next.js configuration
-├── tsconfig.json           # TypeScript configuration
-└── README.md               # This file
-```
-
-## What I Built
-
-Everything required for the assignment:
-- Navigation with all sections
-- Dark/light themes  
+Main stuff:
+- Tab generator (the core thing)
+- Dark/light theme
 - Hamburger menu with animation
-- Up to 15 editable tabs
-- LocalStorage to save work
-- HTML generation with inline CSS only
-- Multiple git commits and branches
+- About page with my info
+- Some extra pages (escape room, coding races etc - mostly empty for now)
 
-## Support
+The generated HTML uses only inline styles because MOODLE doesn't accept external CSS files. Spent way too much time figuring that out.
 
-For questions or issues:
-- **Student:** Nishant Singh (21973913)
-- **Course:** CSE3CWA
-- **Assignment:** Assignment 1
+## Tech stuff
 
-Used ai tools like claude and also took some help from ChatGPT
+- Next.js 15 with TypeScript
+- React for components
+- localStorage for saving tabs
+- Inline CSS everywhere (had to)
+
+## File structure
+
+```
+pages/
+  index.tsx         - main tab generator
+  about.tsx         - about page
+  escape-room.tsx   - extra feature (wip)
+  coding-races.tsx  - extra feature (empty)
+  court-room.tsx    - extra feature (empty)
+  _app.tsx          - app wrapper
+
+components/
+  Header.tsx        - navbar with dark mode
+  Footer.tsx        - footer
+```
+
+## How to use
+
+1. Add tabs using the + button
+2. Click on a tab to edit it
+3. Type your content
+4. Hit "Generate HTML"
+5. Copy or download the file
+6. Upload to MOODLE
+
+Pretty straightforward.
+
+## Notes
+
+- The 15 tab limit is hardcoded (assignment requirement)
+- Dark mode uses a custom event to sync across components
+- Generated HTML filename is weekAssign.html
+- Everything saves automatically in localStorage
+
+## Issues I ran into
+
+- MOODLE not accepting external CSS (solution: inline everything)
+- Dark mode syncing between pages (solution: custom events)
+- Tab IDs getting messed up when deleting (solution: filter and update properly)
+- TypeScript being annoying with types (solution: used `any` in a few places ngl)
+
+## Git
+
+Multiple commits done. Check the history for progress.
+
+## Help
+
+If something breaks or doesn't work, let me know.
+
+---
+
+Made with help from Claude AI and ChatGPT (being honest here). Wrote most of the logic myself but got help with styling and debugging.
