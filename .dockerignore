@@ -49,7 +49,8 @@ logs/
 *.log
 
 # Prisma
-prisma/migrations/
+# Note: migrations folder MUST be included in Docker image
+# prisma/migrations/
 prisma/*.db
 prisma/*.db-journal
 
