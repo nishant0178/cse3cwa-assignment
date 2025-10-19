@@ -45,7 +45,8 @@ next-env.d.ts
 docker-compose.override.yml
 
 # Prisma
-prisma/migrations/
+# Note: migrations folder should be committed to version control
+# prisma/migrations/
 node_modules/.prisma/
 *.db
 *.db-journal
