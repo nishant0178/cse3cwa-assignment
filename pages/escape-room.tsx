@@ -29,6 +29,11 @@ const EscapeRoomPage = () => {
   const [bestTime, setBestTime] = useState<number | null>(null);
   const [darkMode, setDarkMode] = useState(false);
 
+  // Save score states
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string>('');
+
   useEffect(() => {
     const saved = localStorage.getItem('escapeRoomBestTime');
     if (saved) setBestTime(parseInt(saved));
@@ -94,6 +99,8 @@ const EscapeRoomPage = () => {
   };
 
   const handleRestart = () => {
+    setSaveSuccess(false);
+    setSaveError('');
     handleStartGame();
   };
 
@@ -101,6 +108,8 @@ const EscapeRoomPage = () => {
     setGameState('setup');
     setIsTimerRunning(false);
     setTimeRemaining(0);
+    setSaveSuccess(false);
+    setSaveError('');
   };
 
   const handleHintUsed = () => {
@@ -109,6 +118,44 @@ const EscapeRoomPage = () => {
 
   const handleAttempt = () => {
     setTotalAttempts(prev => prev + 1);
+  };
+
+  const handleSaveScore = async (playerName: string) => {
+    setIsSaving(true);
+    setSaveError('');
+
+    try {
+      const completionTime = timerDuration - timeRemaining;
+
+      const response = await fetch('/api/scores/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          playerName: playerName || null,
+          difficulty,
+          language,
+          completionTime,
+          totalAttempts,
+          totalHints: totalHintsUsed,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to save score');
+      }
+
+      setSaveSuccess(true);
+      console.log('Score saved successfully:', data);
+    } catch (error) {
+      console.error('Error saving score:', error);
+      setSaveError(error instanceof Error ? error.message : 'Failed to save score. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Render setup screen
@@ -516,6 +563,12 @@ const EscapeRoomPage = () => {
           onPlayAgain={handleRestart}
           onExit={handleExit}
           isBestTime={gameState === 'won' && (!bestTime || (timerDuration - timeRemaining) < bestTime)}
+          difficulty={difficulty}
+          language={language}
+          onSaveScore={gameState === 'won' ? handleSaveScore : undefined}
+          isSaving={isSaving}
+          saveSuccess={saveSuccess}
+          saveError={saveError}
         />
       )}
     </div>

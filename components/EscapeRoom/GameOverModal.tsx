@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+
 interface GameOverModalProps {
   won: boolean;
   timeElapsed?: number; // in seconds
@@ -9,6 +12,13 @@ interface GameOverModalProps {
   onPlayAgain: () => void;
   onExit: () => void;
   isBestTime?: boolean;
+  // Save score props
+  difficulty?: string;
+  language?: string;
+  onSaveScore?: (playerName: string) => Promise<void>;
+  isSaving?: boolean;
+  saveSuccess?: boolean;
+  saveError?: string;
 }
 
 const GameOverModal = ({
@@ -21,8 +31,16 @@ const GameOverModal = ({
   attempts,
   onPlayAgain,
   onExit,
-  isBestTime = false
+  isBestTime = false,
+  difficulty,
+  language,
+  onSaveScore,
+  isSaving = false,
+  saveSuccess = false,
+  saveError
 }: GameOverModalProps) => {
+  const router = useRouter();
+  const [playerName, setPlayerName] = useState('');
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -246,6 +264,122 @@ const GameOverModal = ({
             letterSpacing: '1px'
           }}>
             New Personal Best
+          </div>
+        )}
+
+        {/* Save Score Section (only when won and not saved yet) */}
+        {won && onSaveScore && !saveSuccess && (
+          <div style={{
+            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+            border: '2px solid #059669',
+            borderRadius: '8px',
+            padding: '20px',
+            marginBottom: '20px'
+          }}>
+            <div style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#059669',
+              marginBottom: '15px',
+              textAlign: 'center',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
+            }}>
+              Save to Leaderboard
+            </div>
+
+            <input
+              type="text"
+              placeholder="Enter your name (optional)"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              disabled={isSaving}
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: '#2a2a2a',
+                border: '1px solid #444',
+                borderRadius: '6px',
+                color: '#fff',
+                fontSize: '14px',
+                marginBottom: '12px',
+                boxSizing: 'border-box'
+              }}
+            />
+
+            <button
+              onClick={() => onSaveScore(playerName.trim())}
+              disabled={isSaving}
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: isSaving ? '#666' : '#059669',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: isSaving ? 'not-allowed' : 'pointer',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                opacity: isSaving ? 0.6 : 1
+              }}
+            >
+              {isSaving ? 'Saving...' : 'Save Score'}
+            </button>
+
+            {saveError && (
+              <div style={{
+                marginTop: '12px',
+                padding: '10px',
+                backgroundColor: 'rgba(185, 28, 28, 0.2)',
+                border: '1px solid #b91c1c',
+                borderRadius: '6px',
+                color: '#fca5a5',
+                fontSize: '12px',
+                textAlign: 'center'
+              }}>
+                {saveError}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Success Message */}
+        {saveSuccess && (
+          <div style={{
+            backgroundColor: 'rgba(5, 150, 105, 0.2)',
+            border: '2px solid #059669',
+            borderRadius: '8px',
+            padding: '15px',
+            marginBottom: '20px',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              color: '#059669',
+              fontSize: '14px',
+              fontWeight: '600',
+              marginBottom: '10px'
+            }}>
+              Score saved successfully!
+            </div>
+            <button
+              onClick={() => router.push('/leaderboard')}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#059669',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
+              }}
+            >
+              View Leaderboard
+            </button>
           </div>
         )}
 
