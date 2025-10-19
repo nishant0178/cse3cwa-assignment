@@ -26,8 +26,17 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // INSTRUMENTATION: Log incoming request
+  const requestId = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] [${requestId}] POST /api/scores/create - Request received`);
+  console.log(`[${timestamp}] [${requestId}] Method: ${req.method}`);
+
+  const startTime = Date.now();
+
   // Only allow POST requests
   if (req.method !== 'POST') {
+    console.log(`[${timestamp}] [${requestId}] Method not allowed: ${req.method}`);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -40,6 +49,16 @@ export default async function handler(
       totalAttempts,
       totalHints,
     } = req.body;
+
+    // INSTRUMENTATION: Log request payload
+    console.log(`[${timestamp}] [${requestId}] Payload:`, {
+      playerName: playerName || 'anonymous',
+      difficulty,
+      language,
+      completionTime,
+      totalAttempts,
+      totalHints
+    });
 
     // Validation: Required fields
     if (!difficulty || !language || completionTime === undefined) {
@@ -79,6 +98,10 @@ export default async function handler(
       });
     }
 
+    // INSTRUMENTATION: Log database operation start
+    const dbStartTime = Date.now();
+    console.log(`[${timestamp}] [${requestId}] Starting database insert...`);
+
     // Create score in database
     const score = await prisma.score.create({
       data: {
@@ -91,6 +114,15 @@ export default async function handler(
       },
     });
 
+    // INSTRUMENTATION: Log database operation completion
+    const dbDuration = Date.now() - dbStartTime;
+    console.log(`[${timestamp}] [${requestId}] Database insert completed in ${dbDuration}ms`);
+    console.log(`[${timestamp}] [${requestId}] Score created with ID: ${score.id}`);
+
+    // INSTRUMENTATION: Log total request duration
+    const totalDuration = Date.now() - startTime;
+    console.log(`[${timestamp}] [${requestId}] POST /api/scores/create - Success (201) - Total time: ${totalDuration}ms`);
+
     // Return created score
     return res.status(201).json({
       success: true,
@@ -98,11 +130,19 @@ export default async function handler(
       message: 'Score saved successfully!',
     });
   } catch (error) {
-    console.error('Error creating score:', error);
+    // INSTRUMENTATION: Log error details
+    const errorDuration = Date.now() - startTime;
+    console.error(`[${timestamp}] [${requestId}] ERROR in /api/scores/create after ${errorDuration}ms:`, error);
+    console.error(`[${timestamp}] [${requestId}] Error type:`, error instanceof Error ? error.constructor.name : typeof error);
+    if (error instanceof Error) {
+      console.error(`[${timestamp}] [${requestId}] Error message:`, error.message);
+      console.error(`[${timestamp}] [${requestId}] Stack trace:`, error.stack);
+    }
 
     // Handle Prisma-specific errors
     if (error instanceof Error) {
       if (error.message.includes('Prisma')) {
+        console.error(`[${timestamp}] [${requestId}] Prisma database error detected`);
         return res.status(500).json({
           error: 'Database error',
           details: process.env.NODE_ENV === 'development' ? error.message : undefined,

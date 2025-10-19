@@ -27,8 +27,17 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // INSTRUMENTATION: Log incoming request
+  const requestId = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] [${requestId}] GET /api/scores/list - Request received`);
+  console.log(`[${timestamp}] [${requestId}] Query params:`, req.query);
+
+  const startTime = Date.now();
+
   // Only allow GET requests
   if (req.method !== 'GET') {
+    console.log(`[${timestamp}] [${requestId}] Method not allowed: ${req.method}`);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -41,6 +50,15 @@ export default async function handler(
       sortBy = 'completionTime',
       order = 'asc',
     } = req.query;
+
+    // INSTRUMENTATION: Log parsed filters
+    console.log(`[${timestamp}] [${requestId}] Filters:`, {
+      difficulty,
+      language,
+      limit,
+      sortBy,
+      order
+    });
 
     // Build where clause for filtering
     const where: any = {};
@@ -85,6 +103,10 @@ export default async function handler(
     }
     const finalLimit = Math.min(limitNum, 500); // Max 500 records
 
+    // INSTRUMENTATION: Log database queries start
+    const dbStartTime = Date.now();
+    console.log(`[${timestamp}] [${requestId}] Starting database queries (findMany + 2x count)...`);
+
     // Fetch scores from database
     const scores = await prisma.score.findMany({
       where,
@@ -97,6 +119,15 @@ export default async function handler(
 
     // Get filtered count
     const filteredCount = await prisma.score.count({ where });
+
+    // INSTRUMENTATION: Log database queries completion
+    const dbDuration = Date.now() - dbStartTime;
+    console.log(`[${timestamp}] [${requestId}] Database queries completed in ${dbDuration}ms`);
+    console.log(`[${timestamp}] [${requestId}] Results: ${scores.length} scores returned, ${filteredCount} filtered, ${total} total`);
+
+    // INSTRUMENTATION: Log total request duration
+    const totalDuration = Date.now() - startTime;
+    console.log(`[${timestamp}] [${requestId}] GET /api/scores/list - Success (200) - Total time: ${totalDuration}ms`);
 
     // Return results
     return res.status(200).json({
@@ -112,11 +143,18 @@ export default async function handler(
       },
     });
   } catch (error) {
-    console.error('Error fetching scores:', error);
+    // INSTRUMENTATION: Log error details
+    const errorDuration = Date.now() - startTime;
+    console.error(`[${timestamp}] [${requestId}] ERROR in /api/scores/list after ${errorDuration}ms:`, error);
+    console.error(`[${timestamp}] [${requestId}] Error type:`, error instanceof Error ? error.constructor.name : typeof error);
+    if (error instanceof Error) {
+      console.error(`[${timestamp}] [${requestId}] Error message:`, error.message);
+    }
 
     // Handle Prisma-specific errors
     if (error instanceof Error) {
       if (error.message.includes('Prisma')) {
+        console.error(`[${timestamp}] [${requestId}] Prisma database error detected`);
         return res.status(500).json({
           error: 'Database error',
           details: process.env.NODE_ENV === 'development' ? error.message : undefined,
