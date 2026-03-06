@@ -62,5 +62,8 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-# Start application
-CMD ["node", "server.js"]
+# Copy migration entrypoint
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+
+# Start application (run migrations then start server)
+CMD npx prisma migrate deploy --schema=./prisma/schema.prisma && node server.js
