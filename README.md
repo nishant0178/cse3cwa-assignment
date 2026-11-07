@@ -2,9 +2,6 @@
 
 A timed coding game built with Next.js. Pick a difficulty and a language, then solve four programming stages before the clock runs out. Finished runs are saved to a PostgreSQL leaderboard.
 
-**Live:** https://cse3cwa-escape-room.onrender.com/escape-room
-(free hosting, so the first load can take up to a minute)
-
 Built for CSE3CWA (Web Application Development) at La Trobe University.
 
 ## How it works
